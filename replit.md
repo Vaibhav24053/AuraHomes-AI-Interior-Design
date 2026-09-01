@@ -1,6 +1,6 @@
-# [Project name]
+# AuraHome
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An editorial AI interior-design platform helping people in India discover and shape homes that feel unmistakably theirs.
 
 ## Run & Operate
 
@@ -22,23 +22,27 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/aurahome/src/App.tsx` — landing page, shared navigation, reusable reveal/count-up/comparison interactions, and placeholder routes
+- `artifacts/aurahome/src/index.css` — AuraHome visual system, typography, color tokens, motion, grain, and responsive styles
+- `artifacts/api-server` — shared Express API scaffold; AuraHome's first pass is intentionally frontend-only
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- AuraHome is a presentation-first frontend in this pass; no AI or database calls are wired until the core product flows are designed.
+- Wouter provides the lightweight route shell so the marketing experience and placeholder product paths share one app.
+- The before/after comparison and count-up metrics are local interactions with reduced-motion support.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The first pass introduces AuraHome's visual identity and landing experience: AI-powered room transformation, style discovery, Vastu-aware redesign, AR previews, INR sourcing, community, and responsive placeholder destinations for each product area.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The user requested a warm, editorial Indian-market experience with restrained category colors, soft motion, and no real backend logic in the first pass.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+Use the artifact workflow for the web app; its Vite server requires the workflow-provided `PORT` and `BASE_PATH` values.
 
 ## Pointers
 

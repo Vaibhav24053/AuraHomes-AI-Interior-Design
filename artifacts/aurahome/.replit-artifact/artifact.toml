@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AuraHome AI Interior Design"
+description = "An editorial AI interior design platform for Indian homes, with an immersive landing page, style discovery, room transformation, sourcing, and community routes."
+version = "1.0.0"
+id = "artifacts/aurahome"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18423
+
+[services.development]
+run = "pnpm --filter @workspace/aurahome run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/aurahome", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/aurahome/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18423"
+BASE_PATH = "/"
