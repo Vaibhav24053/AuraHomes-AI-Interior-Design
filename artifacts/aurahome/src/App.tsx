@@ -108,9 +108,9 @@ function StyleAccordion({ items }: { items: StyleAccordionItem[] }) {
 
 function RegionalStyles() {
   const items: StyleAccordionItem[] = [
-    { name: 'Kerala Traditional', region: 'South / 01', description: 'Timber, brass, and easy breathing room — a direction rooted in craft and climate.', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85' },
-    { name: 'Rajasthani', region: 'West / 02', description: 'Sun-washed colour and artisan texture, layered without feeling heavy.', image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=85' },
-    { name: 'Bengali', region: 'East / 03', description: 'Collected, literary, and full of old-world details that still work for today.', image: 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=1200&q=85' },
+    { name: 'Nalukettu', region: 'South / 01', description: 'Timber, brass, and easy breathing room — a direction rooted in craft and climate.', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85' },
+    { name: 'Rajasthani Haveli', region: 'West / 02', description: 'Sun-washed colour and artisan texture, layered without feeling heavy.', image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=85' },
+    { name: 'Bonedi Bari', region: 'East / 03', description: 'Collected, literary, and full of old-world details that still work for today.', image: 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=1200&q=85' },
   ];
   return <section className="bg-[#eee5d7] px-5 py-24 sm:px-10 lg:px-20 lg:py-32"><div className="mx-auto max-w-[1240px]"><Reveal><div className="mb-14 flex flex-wrap items-end justify-between gap-6"><div><div className="eyebrow text-[#b8573b]">Regional style picker</div><h2 className="display mt-5 max-w-[680px] text-[clamp(3.2rem,6vw,6rem)] leading-[.88] tracking-[-.05em]">A point of view for <span className="text-[#b8573b]">everywhere.</span></h2></div><p className="max-w-[300px] text-[13px] leading-7 text-[#536059]">Explore regional directions and find the one that feels closest to home.</p></div></Reveal><Reveal delay="reveal-delay-1"><StyleAccordion items={items} /></Reveal></div></section>;
 }
@@ -197,7 +197,7 @@ function Hero() {
   );
 }
 
-const styles = ['Japandi', 'Bohemian', 'Kerala Traditional', 'Punjabi Maximalist', 'Gen-Z Minimal', 'Vastu-Modern', 'Rajasthani', 'Bengali', 'Industrial Loft', 'Coastal'];
+const styles = ['Japandi', 'Bohemian', 'Nalukettu', 'Punjabi Haveli', 'Gen-Z Minimal', 'Vastu-Modern', 'Rajasthani Haveli', 'Bonedi Bari', 'Industrial Loft', 'Coastal', 'Chettinad', 'Pol House', 'Wada Style', 'Awadhi', 'Nizami Style', 'Indo-Portuguese', 'Kashmiri Wood Style', 'Assam-Type'];
 function Marquee() {
   return <section className="overflow-hidden border-y border-[#d7cbbb] bg-[#eee5d7] py-5" aria-label="Interior design styles"><div className="marquee-track flex items-center gap-8">{[...styles, ...styles].map((style, index) => <div key={`${style}-${index}`} className="flex items-center gap-8 whitespace-nowrap"><span className="display text-[25px] italic text-[#536059]">{style}</span><span className="size-1.5 rounded-full bg-[#b8573b]" /></div>)}</div></section>;
 }
