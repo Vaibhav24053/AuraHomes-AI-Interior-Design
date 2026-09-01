@@ -1,0 +1,16 @@
+Make the following polish changes to what's already built:
+
+1. RENAME the brand everywhere from "AuraHome" to "AuraHomes" — logo text, page titles, meta tags, footer copyright, any hardcoded brand string in the codebase. Keep the "aura/home" style logotype treatment but update to "aura/homes".
+
+2. TYPOGRAPHY FIX — the current serif display font is elegant but hurting legibility and hierarchy at some sizes. Fix:
+   - Increase weight contrast between headline and body: headlines should feel confidently bold/large, body text should be noticeably smaller and higher-contrast against the background (check color contrast ratios, some current body text on cream background reads too light/low-contrast)
+   - Reduce how often the italic serif accent style is used — right now nearly every section headline has an italic flourish word, which dilutes the effect. Reserve italic emphasis for ONE key word per major section, not every subheading, and make sure at least half of section headlines are the plain (non-italic) serif for contrast and rhythm
+   - Increase line-height and letter-spacing slightly on body paragraph text for readability
+
+3. COPY FIX — the current copy ("Begin with a feeling", "A little help, beautifully given", "Good design is less about rules, more about recognition") is too abstract about what the product actually does. Rewrite each section's copy to lead with a clear, concrete statement of function, THEN allow one poetic line to follow — not replace clarity with poetry. For example, restructure the hero subheading to explicitly state: AI-powered room redesign personalized to your taste, your region's traditions, and your budget — THEN keep a shorter poetic closing line if desired. Apply the same principle to the "toolkit" section card descriptions and the mid-page "method" steps — each should clearly state the concrete action/outcome first.
+
+4. REAL MOTION — add the following interaction patterns that are currently missing or too subtle:
+   - A hover-driven accordion with live image swap: build this as a reusable component for use in the regional style picker (built in the next stage) — a vertical list of items where hovering/tapping one cross-fades in an associated image beside it, with a smooth 300-400ms opacity+slight-scale transition, not an instant swap
+   - Ensure the floating card overlays (like the "Style DNA" card over the hero image) have a subtle continuous presence — a gentle shadow/glow pulse or slow float animation, not a static pinned card
+   - Add smooth page-transition fades when navigating between routes (wrap route changes in a fade transition using framer-motion's AnimatePresence)
+   - On the before/after slider section, add a subtle auto-preview animation on scroll-into-view (slider briefly sweeps partway across automatically once, then hands control to the user) to draw attention to the interaction

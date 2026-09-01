@@ -1,4 +1,4 @@
-# AuraHome
+# AuraHomes
 
 An editorial AI interior-design platform helping people in India discover and shape homes that feel unmistakably theirs.
 
@@ -23,18 +23,18 @@ An editorial AI interior-design platform helping people in India discover and sh
 ## Where things live
 
 - `artifacts/aurahome/src/App.tsx` — landing page, shared navigation, reusable reveal/count-up/comparison interactions, and placeholder routes
-- `artifacts/aurahome/src/index.css` — AuraHome visual system, typography, color tokens, motion, grain, and responsive styles
-- `artifacts/api-server` — shared Express API scaffold; AuraHome's first pass is intentionally frontend-only
+- `artifacts/aurahome/src/index.css` — AuraHomes visual system, typography, color tokens, motion, grain, and responsive styles
+- `artifacts/api-server` — shared Express API scaffold; AuraHomes' first pass is intentionally frontend-only
 
 ## Architecture decisions
 
-- AuraHome is a presentation-first frontend in this pass; no AI or database calls are wired until the core product flows are designed.
+- AuraHomes is a presentation-first frontend in this pass; no AI or database calls are wired until the core product flows are designed.
 - Wouter provides the lightweight route shell so the marketing experience and placeholder product paths share one app.
 - The before/after comparison and count-up metrics are local interactions with reduced-motion support.
 
 ## Product
 
-The first pass introduces AuraHome's visual identity and landing experience: AI-powered room transformation, style discovery, Vastu-aware redesign, AR previews, INR sourcing, community, and responsive placeholder destinations for each product area.
+The first pass introduces AuraHomes' visual identity and landing experience: AI-powered room transformation, style discovery, Vastu-aware redesign, AR previews, INR sourcing, community, and responsive placeholder destinations for each product area.
 
 ## User preferences
 

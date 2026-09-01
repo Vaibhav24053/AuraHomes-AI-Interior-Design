@@ -392,6 +392,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .mono { font-family: var(--app-font-mono); }
 .eyebrow { font-family: var(--app-font-mono); letter-spacing: .12em; text-transform: uppercase; font-size: 10px; }
 .text-gradient { background: linear-gradient(100deg, #b8573b 0%, #d89a48 48%, #8b6b2e 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.aura-shell p:not(.display) { line-height: 1.75; letter-spacing: .012em; }
 .grain::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: .045; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E"); }
 .hero-aurora { background: radial-gradient(circle at 72% 35%, rgba(216,154,72,.25), transparent 25%), radial-gradient(circle at 22% 11%, rgba(184,87,59,.12), transparent 28%); }
 .reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
@@ -399,7 +400,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .reveal-delay-1 { transition-delay: .1s; } .reveal-delay-2 { transition-delay: .2s; } .reveal-delay-3 { transition-delay: .3s; }
 .float-slow { animation: float-slow 9s ease-in-out infinite; }
 .float-slow-2 { animation: float-slow 12s ease-in-out -3s infinite reverse; }
+.float-slow.float-card { animation: float-slow 9s ease-in-out infinite, card-pulse 5s ease-in-out infinite; }
+.float-slow-2.float-card { animation: float-slow 12s ease-in-out -3s infinite reverse, card-pulse 5s ease-in-out infinite; }
 @keyframes float-slow { 0%,100% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(0,-13px,0) rotate(2deg); } }
+@keyframes card-pulse { 0%,100% { filter: drop-shadow(0 10px 18px rgba(77,51,31,.08)); } 50% { filter: drop-shadow(0 16px 27px rgba(184,87,59,.2)); } }
 .marquee-track { animation: marquee 28s linear infinite; width: max-content; }
 @keyframes marquee { to { transform: translateX(-50%); } }
 .image-zoom img { transition: transform .7s cubic-bezier(.2,.75,.2,1); }
