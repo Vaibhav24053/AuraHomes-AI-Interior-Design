@@ -1,0 +1,94 @@
+Rebuild/update the AuraHomes frontend (React + Vite + TypeScript + Tailwind v4 + shadcn/ui + framer-motion + lucide-react) with the following. Apply all sections — this replaces earlier partial passes, including fixing naming inconsistencies that were previously only patched in one place at a time.
+
+═══════════════════════════════════
+1. BRAND
+═══════════════════════════════════
+Brand name is "AuraHomes" (not AuraHome) everywhere — logo, page titles, meta tags, footer copyright, any hardcoded string. Keep the "aura/homes" logotype treatment (word + slash + word) consistent with the current visual style.
+
+═══════════════════════════════════
+2. SINGLE SOURCE OF TRUTH FOR STYLE DATA
+═══════════════════════════════════
+Create ONE file, src/data/regionalStyles.ts, exporting a typed array that is the ONLY place style names, regions, image search terms, and captions live. Every other component (landing page marquee, regional style picker/accordion, the unified design flow's style selector, and the community page's filter list) must IMPORT from this file — never hardcode a duplicate list anywhere else. This is important: a duplicated list has already caused two separate naming-drift bugs in this project.
+
+The array should contain exactly these entries, each with { id, name, region, direction (North/South/East/West/Deccan/Coastal/Himalayan/Modern), imageSearchTerm, caption, isRegional (boolean) }:
+
+- Nalukettu — Kerala — South — "Kerala traditional courtyard home wood interior" — "Dark teak, courtyards, and brass — a direction rooted in Kerala's monsoon-tested architecture." — regional
+- Chettinad — Tamil Nadu — South — "Chettinad mansion interior Athangudi tiles" — "Teak pillars and Athangudi tiles — the grandeur of Chettiar merchant houses." — regional
+- Rajasthani Haveli — Rajasthan — West — "Rajasthani haveli interior jharokha mirror work" — "Arched jharokhas and mirror work — desert grandeur reimagined." — regional
+- Pol House — Gujarat — West — "Ahmedabad pol house interior carved wood" — "Carved wood and close-knit warmth — Ahmedabad's old city character." — regional
+- Bonedi Bari — Bengal — East — "old Kolkata heritage home interior terracotta" — "High ceilings and terracotta — the quiet grandeur of old Kolkata homes." — regional
+- Assam-Type — Northeast — East — "Assam type house bamboo wood raised" — "Wood, bamboo, and practical elegance — built for the Northeast's climate." — regional
+- Punjabi Haveli — Punjab — North — "Punjab haveli courtyard phulkari textile" — "Bold color and generous courtyards — Punjab's open-hearted hospitality." — regional
+- Awadhi — Uttar Pradesh — North — "Lucknow haveli interior chikankari arches" — "Delicate arches and Nawabi refinement — Lucknow's understated elegance." — regional
+- Wada Style — Maharashtra — West — "Peshwa era wada courtyard home interior" — "Courtyards and carved wood columns — Maharashtra's Peshwa-era homes." — regional
+- Nizami Style — Hyderabad/Deccan — Deccan — "Hyderabad Nizam palace interior arches" — "Grand arches and Deccan stonework — Nizami-era refinement." — regional
+- Indo-Portuguese — Goa — Coastal — "Goan Portuguese home interior oyster shell window" — "Oyster-shell windows and coastal color — Goa's Indo-Portuguese blend." — regional
+- Kashmiri Wood Style — Kashmir — Himalayan — "Kashmiri khatamband ceiling wood interior" — "Khatamband ceilings and walnut wood — Kashmir's intricate craft tradition." — regional
+- Gen-Z Minimal — (none) — Modern — "minimal modern Indian apartment interior" — "Clean lines and quiet color — for those who want simple and current." — not regional
+- Vastu-Modern — (none) — Modern — "vastu modern Indian home interior terracotta brass" — "Ancient placement wisdom, contemporary execution." — not regional
+
+Also keep the existing non-Indian options (Japandi, Bohemian, Industrial Loft, Coastal Modern) in the same file with isRegional: false, since they're valid global style options users can pick.
+
+For image sourcing: use Unsplash source URLs built from each imageSearchTerm. If a specific regional term returns generic/unrelated results, fall back to the closest warm-wood/courtyard-toned image available rather than a mismatched modern interior — add a code comment flagging any entry where the image match is weak, so it can be replaced with a better-curated source later.
+
+═══════════════════════════════════
+3. TYPOGRAPHY & COPY FIXES
+═══════════════════════════════════
+- Keep 'DM Serif Display' (headlines) + 'DM Sans' (body), but fix hierarchy: headlines bold/large with strong presence, body text noticeably smaller with higher contrast against the cream background (audit any low-contrast gray-on-cream text and darken it)
+- STOP using italic serif on nearly every headline — reserve italic emphasis for exactly one key word per major section, and make sure at least half of all section headlines use the plain (non-italic) serif for visual rhythm
+- Increase line-height and letter-spacing slightly on body paragraphs for readability
+- Rewrite copy across the site to lead with concrete function, then optionally close with one poetic line — not the reverse. Every section's FIRST sentence should clearly state what the product does or what the section is for. Example: the hero subheading should clearly state "AI-powered room redesign personalized to your taste, your region's traditions, and your budget" before any poetic flourish. Apply this to the toolkit cards, the "method" steps, and the regional style picker's intro copy too.
+
+═══════════════════════════════════
+4. REAL MOTION & TRANSITIONS
+═══════════════════════════════════
+- Hover-accordion with live image cross-fade (used in the regional style picker): smooth 300-400ms opacity + slight scale transition on image swap, not an instant cut
+- Floating card overlays (like a "Style DNA" card pinned over a hero image) should have continuous subtle life — a slow float/glow pulse animation, never perfectly static
+- Wrap route transitions in framer-motion's AnimatePresence for smooth cross-fades when navigating between pages
+- Before/after slider: on scroll-into-view, auto-sweep the slider partway across once automatically to draw attention, then hand control to the user
+- Scroll-triggered reveal animations (fade + slight upward translate) on every major section, staggered for grouped elements (e.g., cards in a grid reveal in sequence, not simultaneously)
+- Buttons: gold/terracotta CTA buttons get a subtle lift + glow shadow on hover, smooth 150-200ms easing
+- Marquee ticker: smooth continuous scroll, pausable on hover
+
+═══════════════════════════════════
+5. LANDING PAGE STRUCTURE
+═══════════════════════════════════
+(Keep existing sections/layout, just apply sections 1-4 above to them, and additionally:)
+- Marquee ticker pulls from src/data/regionalStyles.ts (regional entries + the 4 global style options), not a hardcoded list
+- Regional Style Picker section pulls from the same file, grouped by `direction`
+- Toolkit section cards should link to the new unified /design route (see section 6) instead of separate /quiz and /transform — update card copy to "Start Designing" as the primary card rather than presenting quiz and room-transform as two separate tools
+
+═══════════════════════════════════
+6. UNIFIED "/design" FLOW (replaces separate Quiz + Transform pages)
+═══════════════════════════════════
+Single continuous flow, one persistent step indicator, no hard boundary between "quiz" and "design tool":
+
+1. Age bracket (18-25 / 26-35 / 36-50 / 50+)
+2. Current city/location (text input or dropdown of major Indian cities) — copy explicitly states: "We'll suggest a starting style based on your city — you can change it to anything."
+3. Regional/traditional style picker (from src/data/regionalStyles.ts) — if the step-2 city has an obvious regional match (e.g. Kochi→Nalukettu, Chennai→Chettinad, Jaipur→Rajasthani Haveli, map a reasonable set of major cities to their regional entries), pre-highlight that option with a "Suggested for you" badge, but ALL options remain fully selectable — also include "Surprise me across regions" and "Skip — I know my own style" options
+4. Own or rent (two large tappable cards)
+5. Household composition (multi-select chips: Just me / Partner / Kids / Parents / Extended family / Roommates)
+6. Budget range (slider: ₹50k-1L / 1L-3L / 3L-7L / 7L+)
+7. Design DNA swipe round — 8 image pairs, tap-to-choose, satisfying scale+fade card animation between pairs, tracking a hidden 5-axis taste vector (ornate-vs-clean, bold-vs-muted, warm-textured-vs-cool-minimal, dense-vs-spacious, traditional-vs-contemporary) — never shown to the user directly
+8. Room photo upload, with copy: "Now let's see the actual room. Everything you just told us shapes what happens next."
+9. Immediately show "Analyzing your space..." loading state (calls context-detection, then Vastu-check, then archetype-generation endpoints in sequence — assume these API routes already exist or are being built separately on the backend), then reveal a floating Persona card over the uploaded photo (archetype name, tagline, 3 color swatches, style keywords, signature tip)
+10. Directly below, without navigating away: a "Redesign My Whole Room" vs "Preview One Furniture Piece" toggle (furniture-only mode: pick one item — sofa, bed, dining table, wardrobe, armchair), Vastu correction chips (dismissible, tap for plain-language why), a style confirmation showing the auto/chosen style with an easy "Change style" control, and a "Generate My Design" button
+11. On generate: call the image-generation endpoint with the room photo + compiled context, show loading/retry states matching existing patterns, display result
+12. Below the result: an "AR View" toggle (Three.js tilt-responsive panorama viewer — device orientation on mobile, mouse-drag on desktop) and tiered sourcing tabs (Branded / Local Market / Artisan — placeholder pricing data for now)
+
+Keep /quiz and /transform as redirects to /design for backward compatibility.
+
+═══════════════════════════════════
+7. BUDGET PAGE UPDATES
+═══════════════════════════════════
+- Add a "Lump Sum" / "Monthly EMI" toggle next to the budget slider — EMI mode shows a tenure slider (6-36 months) and calculates monthly payment at ~13% interest
+- Results list shows each furniture/decor item with three prices side by side (Branded / Local Market / Artisan), with a short descriptive line for the artisan tier specifically (e.g. "Handcrafted by a regional woodworker") so it reads as a distinct value proposition, not just "cheaper"
+
+═══════════════════════════════════
+8. COMMUNITY PAGE UPDATES
+═══════════════════════════════════
+- Add a filter bar using the same regionalStyles.ts data to filter posts by regional style
+- Add a "Try the Sandbox" section: pick a previous room or upload new, freely swap styles with no quiz/context flow required, framed casually ("Just playing around? Try different looks freely.")
+- Add one "Coming Soon: DIY Workshops with Local Artisans" placeholder card
+
+Apply this whole prompt as one coherent pass. If any single piece needs iteration afterward, that's expected — flag anything that was ambiguous or where you made an assumption, so it can be corrected precisely rather than guessed at again.

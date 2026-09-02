@@ -1,0 +1,1 @@
+- [Canvas image sources](cors-and-panorama.md) — search-based image redirects may load in an `<img>` but fail CORS when sampled by WebGL or canvas.
