@@ -9,7 +9,8 @@ An editorial AI interior-design platform helping people in India discover and sh
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secrets: `AURAHOMES_API_KEY`, `OPENAI_API_KEY`, and `ANTHROPIC_API_KEY`
+- Optional env: `ANTHROPIC_MODEL` — defaults to `claude-sonnet-4-5`
 
 ## Stack
 
@@ -24,11 +25,12 @@ An editorial AI interior-design platform helping people in India discover and sh
 
 - `artifacts/aurahome/src/App.tsx` — landing page, shared navigation, reusable reveal/count-up/comparison interactions, and placeholder routes
 - `artifacts/aurahome/src/index.css` — AuraHomes visual system, typography, color tokens, motion, grain, and responsive styles
-- `artifacts/api-server` — shared Express API scaffold; AuraHomes' first pass is intentionally frontend-only
+- `artifacts/api-server` — authenticated Express API for room context, image editing, archetypes, and Vastu checks
 
 ## Architecture decisions
 
-- AuraHomes is a presentation-first frontend in this pass; no AI or database calls are wired until the core product flows are designed.
+- OpenAI `gpt-image-1` is used only for editing the user's actual room photo; Anthropic handles vision and structured text reasoning.
+- Every `/api` route requires `x-api-key` matching the `AURAHOMES_API_KEY` secret.
 - Wouter provides the lightweight route shell so the marketing experience and placeholder product paths share one app.
 - The before/after comparison and count-up metrics are local interactions with reduced-motion support.
 
@@ -38,7 +40,7 @@ The first pass introduces AuraHomes' visual identity and landing experience: AI-
 
 ## User preferences
 
-The user requested a warm, editorial Indian-market experience with restrained category colors, soft motion, and no real backend logic in the first pass.
+The user requested a warm, editorial Indian-market experience with restrained category colors and soft motion.
 
 ## Gotchas
 

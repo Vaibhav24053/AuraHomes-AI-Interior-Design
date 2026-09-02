@@ -1,0 +1,22 @@
+Now build the backend API server for AuraHomes. This uses TWO AI providers, each for what they're actually best at — do not use one provider for everything:
+
+- OpenAI (gpt-image-1) — the ONLY provider used for actual image generation/editing, since Claude has no image generation capability at all.
+- Anthropic (Claude, e.g. claude-sonnet-4-5 or latest available) — used for all text reasoning, structured JSON generation, and image-understanding/vision tasks (room detection), since Claude tends to follow strict structured-output instructions more reliably and produce less generic creative copy than gpt-4o-mini.
+
+Install and configure both the `openai` and `@anthropic-ai/sdk` npm packages. I will provide OPENAI_API_KEY and ANTHROPIC_API_KEY as environment secrets.
+
+IMPORTANT ARCHITECTURE NOTE: when a user uploads a room photo, the image generation step must EDIT that actual photo (image-to-image), not generate an unrelated new room from a text prompt alone. Do not use text-to-image generation for the main redesign feature.
+
+Set up Express routes:
+
+1. POST /api/detect-context — takes a base64 room photo, uses Claude's vision capability (send the image as a base64 content block in the messages array) to return: { roomType: string, estimatedOrientation: string (best guess at which wall faces which direction if determinable, else "unknown") }. Ask Claude to respond with strict JSON only, matching this schema exactly.
+
+2. POST /api/generate-design — this is the core feature and the ONLY route that calls OpenAI. Takes: { imageBase64, mimeType, prompt } where prompt is a fully-compiled instruction (built client-side, referencing the style names/captions from src/data/regionalStyles.ts). Uses OpenAI's images.edit() endpoint with model "gpt-image-1", passing the user's actual uploaded image as the base image being edited, NOT images.generate(). This must preserve the room's real architecture, walls, and windows while changing furniture/decor/style per the prompt. Return the result as a base64 data URL.
+
+3. POST /api/design-archetype — takes an array of quiz answers (including the selected styleId matching a regionalStyles.ts entry, and the hidden 5-value taste vector from the swipe round), uses Claude, returns a JSON object: { archetype: string (creative 2-3 word name), tagline: string, primaryColor: hex, secondaryColor: hex, accentColor: hex, styleKeywords: array of 3 strings, signatureTip: string }. Instruct Claude explicitly to respond with ONLY the JSON object, no markdown fences, no preamble — and parse defensively on the client in case of formatting slip-ups.
+
+4. POST /api/vastu-check — takes { roomType, orientation, furnitureList } and a simple rule-based (NOT AI-generated) lookup covering these core rules: bed should be placed away from direct door alignment, kitchen stove ideally faces east/southeast if orientation is known, main door/entrance should be kept clutter-free, mirrors should not directly face the bed, a pooja/prayer corner if requested should go in the northeast if orientation is known. Return an array of { rule, applies: boolean, correctionInstruction: string, plainLanguageWhy: string }. If orientation is "unknown", skip orientation-dependent rules and only return the orientation-independent ones. Pre-written static text for plainLanguageWhy — no AI call needed for this route.
+
+All routes should require a simple API key header (x-api-key), whatever pattern is simplest to set up — I'll configure the actual key as a Replit secret.
+
+Also tell me the exact environment variable names you're expecting so I can add them in Replit's Secrets tab (should include both OPENAI_API_KEY and ANTHROPIC_API_KEY).

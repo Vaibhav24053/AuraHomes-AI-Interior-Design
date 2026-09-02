@@ -1,2 +1,3 @@
 - [Canvas image sources](cors-and-panorama.md) — search-based image redirects may load in an `<img>` but fail CORS when sampled by WebGL or canvas.
 - [Motion ownership](motion-ownership.md) — avoid having Framer and CSS keyframes write opacity or transform on the same element.
+- [GPT Image edit inputs](gpt-image-edit-inputs.md) — GPT Image edits return base64 by default; avoid DALL-E response options and reject GIF inputs.
