@@ -184,7 +184,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .type-h2 { font-size: var(--type-h2); line-height: .9; letter-spacing: -.05em; }
 .type-h3 { font-size: var(--type-h3); line-height: 1; }
 .hero-title { overflow: visible; padding-bottom: .08em; font-size: clamp(3rem, 5.7vw, 5.5rem); line-height: 1.02; letter-spacing: -.065em; }
-.hero-title-line { display: block; overflow: visible; white-space: nowrap; }
+.hero-title-line { display: block; overflow: visible; padding-bottom: .06em; line-height: 1.08; white-space: nowrap; }
+.hero-descender { position: relative; display: inline-block; overflow: visible; margin-bottom: -.18em; padding-bottom: .18em; line-height: 1.2; vertical-align: baseline; }
 .hero-ai { display: inline-block; margin-left: .08em; letter-spacing: -.045em; transform: translateY(.015em); }
 .type-body { font-size: var(--type-body); line-height: 1.8; }
 .type-small { font-size: var(--type-small); line-height: 1.5; }

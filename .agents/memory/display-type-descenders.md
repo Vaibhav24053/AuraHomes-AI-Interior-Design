@@ -3,8 +3,8 @@ name: Display-type descenders
 description: Preventing large serif headline descenders from being clipped by surrounding layout.
 ---
 
-Large display-serif headlines must retain visible vertical overflow through their ancestor layout, not merely use a larger line-height.
+When individual glyphs in a gradient-filled display headline need isolated descent space, nested spans must receive their own gradient-text fill as well as a taller inline box.
 
-**Why:** Adjusting line-height alone did not restore the lower strokes of letters such as “g” and “y” while a page-level container still clipped vertical overflow.
+**Why:** Adjusting the parent line-height and overflow did not change the affected “g” and “y.” Isolating them revealed that `background-clip: text` on the parent did not paint the nested glyph spans.
 
-**How to apply:** When a large headline loses descenders, inspect ancestor overflow first. Constrain only horizontal overflow where needed, and leave explicit descent space on the headline.
+**How to apply:** Give isolated descender spans an explicit inline line box and apply the gradient-text treatment directly to each nested span. Keep vertical overflow visible through the headline hierarchy.
