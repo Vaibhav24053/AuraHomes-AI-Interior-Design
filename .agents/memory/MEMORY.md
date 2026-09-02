@@ -1,1 +1,2 @@
 - [Canvas image sources](cors-and-panorama.md) — search-based image redirects may load in an `<img>` but fail CORS when sampled by WebGL or canvas.
+- [Motion ownership](motion-ownership.md) — avoid having Framer and CSS keyframes write opacity or transform on the same element.

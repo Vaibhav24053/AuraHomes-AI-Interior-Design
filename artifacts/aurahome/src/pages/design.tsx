@@ -30,6 +30,7 @@ import {
   type DesignGenerationResult,
   type FurniturePiece,
 } from '@/lib/designDemoService';
+import { handleImageError } from '@/lib/imageFallback';
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 const BUDGET_BANDS = ['₹50k–1L', '₹1L–3L', '₹3L–7L', '₹7L+'] as const;
@@ -41,7 +42,7 @@ function Step1Age({ age, setAge, nextStep }: any) {
   return (
     <div className="mx-auto max-w-lg text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 01 / Context</div>
-      <h2 className="display text-4xl mb-8">What stage of life are you designing for?</h2>
+      <h2 className="display type-h2 mb-8">What stage of life are you designing for?</h2>
       <div className="grid gap-3">
         {['18–25', '26–35', '36–50', '50+'].map(bracket => (
           <button 
@@ -65,7 +66,7 @@ function Step2City({ city, setCity, nextStep }: any) {
   return (
     <div className="mx-auto max-w-lg text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 02 / Geography</div>
-      <h2 className="display text-4xl mb-3">Where is this room located?</h2>
+      <h2 className="display type-h2 mb-3">Where is this room located?</h2>
       <p className="text-[14px] text-[#68766d] mb-8">We'll suggest a starting style based on your city — you can change it to anything.</p>
       
       <div className="relative mb-6">
@@ -116,7 +117,7 @@ function Step3Style({ city, styleId, setStyleId, nextStep }: any) {
     <div className="mx-auto max-w-4xl">
       <div className="text-center mb-10">
         <div className="eyebrow mb-4 text-[#b8573b]">Step 03 / Point of view</div>
-        <h2 className="display text-4xl mb-3">Choose a visual direction</h2>
+        <h2 className="display type-h2 mb-3">Choose a visual direction</h2>
         <p className="text-[14px] text-[#68766d] max-w-md mx-auto">Explore regional directions or modern aesthetics. {suggestedId ? `Based on ${city}, we have a suggestion.` : ''}</p>
       </div>
       
@@ -131,6 +132,7 @@ function Step3Style({ city, styleId, setStyleId, nextStep }: any) {
               <img 
                 src={getImageUrl(style.imageSearchTerm)} 
                 alt={style.name} 
+                onError={handleImageError}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -141,7 +143,7 @@ function Step3Style({ city, styleId, setStyleId, nextStep }: any) {
                 </div>
               )}
               <div className="text-[10px] uppercase tracking-widest text-[#68766d] mb-1">{style.direction}</div>
-              <h3 className="display text-xl mb-1">{style.name}</h3>
+              <h3 className="display type-h3 mb-1">{style.name}</h3>
               <p className="text-[12px] text-[#68766d] line-clamp-2">{style.caption}</p>
             </div>
           </button>
@@ -180,7 +182,7 @@ function Step4OwnRent({ ownership, setOwnership, nextStep }: any) {
   return (
     <div className="mx-auto max-w-2xl text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 04 / Permissions</div>
-      <h2 className="display text-4xl mb-8">Do you own or rent?</h2>
+      <h2 className="display type-h2 mb-8">Do you own or rent?</h2>
       <div className="grid gap-6 sm:grid-cols-2">
         {[
           { id: 'own', title: 'I own it', desc: 'Full redesign, permanent changes, structural edits allowed.', icon: Home },
@@ -194,7 +196,7 @@ function Step4OwnRent({ ownership, setOwnership, nextStep }: any) {
             <div className={`mb-6 rounded-full p-4 transition-colors ${ownership === opt.id ? 'bg-[#b8573b] text-white' : 'bg-white text-[#29352f] group-hover:text-[#b8573b]'}`}>
               <opt.icon size={32} strokeWidth={1.5} />
             </div>
-            <h3 className="display text-3xl mb-3">{opt.title}</h3>
+            <h3 className="display type-h3 mb-3">{opt.title}</h3>
             <p className="text-[14px] text-[#68766d]">{opt.desc}</p>
           </button>
         ))}
@@ -211,7 +213,7 @@ function Step5Household({ household, setHousehold, nextStep }: any) {
   return (
     <div className="mx-auto max-w-xl text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 05 / People</div>
-      <h2 className="display text-4xl mb-3">Who shares this home?</h2>
+      <h2 className="display type-h2 mb-3">Who shares this home?</h2>
       <p className="text-[14px] text-[#68766d] mb-10">Select all that apply. This helps us factor in durability, storage, and flow.</p>
       
       <div className="flex flex-wrap justify-center gap-3">
@@ -246,7 +248,7 @@ function Step6Budget({ budget, setBudget, nextStep }: any) {
   return (
     <div className="mx-auto max-w-xl text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 06 / Budget</div>
-      <h2 className="display text-4xl mb-3">What's your comfort zone?</h2>
+      <h2 className="display type-h2 mb-3">What's your comfort zone?</h2>
       <p className="text-[14px] text-[#68766d] mb-12">We use this to pull real INR pricing from appropriate tiers (Artisan, Local, Branded).</p>
       
       <div className="grid gap-3">
@@ -270,15 +272,16 @@ function Step6Budget({ budget, setBudget, nextStep }: any) {
 function Step7DNA({ nextStep, dnaVector, setDnaVector }: any) {
   const [pairIndex, setPairIndex] = useState(0);
   const pairs = [
-    { a: 'ornate classic living room', b: 'minimal clean living room', axis: 0 },
-    { a: 'bold colorful eclectic interior', b: 'muted neutral calm interior', axis: 1 },
-    { a: 'warm textured wood room', b: 'cool minimal concrete room', axis: 2 },
-    { a: 'dense cozy layered room', b: 'spacious airy empty room', axis: 3 },
-    { a: 'traditional heritage indian home', b: 'contemporary modern apartment', axis: 4 },
-    { a: 'dark moody dramatic bedroom', b: 'bright sunlit airy bedroom', axis: 1 },
-    { a: 'maximalist patterned wallpaper room', b: 'solid painted quiet room', axis: 0 },
-    { a: 'raw unfinished industrial loft', b: 'polished refined elegant space', axis: 2 },
+    { a: 'photo-1617104611622-d5f245d317f0', b: 'photo-1600566753086-00f18fb6b3ea', axis: 0, aAlt: 'Ornate classic room', bAlt: 'Clean minimal room' },
+    { a: 'photo-1616046229478-9901c5536a45', b: 'photo-1600210491892-03d54c0aaf87', axis: 1, aAlt: 'Bold colourful interior', bAlt: 'Muted neutral interior' },
+    { a: 'photo-1615874959474-d609969a20ed', b: 'photo-1600607687939-ce8a6c25118c', axis: 2, aAlt: 'Warm textured wood room', bAlt: 'Cool minimal room' },
+    { a: 'photo-1618221195710-dd6b41faaea6', b: 'photo-1600566753051-f0b89df2dd90', axis: 3, aAlt: 'Dense layered room', bAlt: 'Spacious airy room' },
+    { a: 'photo-1600121848594-d8644e57abab', b: 'photo-1600585154340-be6161a56a0c', axis: 4, aAlt: 'Traditional heritage home', bAlt: 'Contemporary apartment' },
+    { a: 'photo-1616486338812-3dadae4b4ace', b: 'photo-1600573472550-8090b5e0745e', axis: 1, aAlt: 'Dark dramatic bedroom', bAlt: 'Bright sunlit bedroom' },
+    { a: 'photo-1615529328331-f8917597711f', b: 'photo-1600566753190-17f0baa2a6c3', axis: 0, aAlt: 'Patterned maximalist room', bAlt: 'Quiet solid-colour room' },
+    { a: 'photo-1600607687920-4e2a09cf159d', b: 'photo-1618219908412-a29a1bb7b86e', axis: 2, aAlt: 'Raw industrial loft', bAlt: 'Polished elegant room' },
   ];
+  const dnaImage = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=82`;
   const totalPairs = pairs.length;
   
   const handleSelect = (choice: 'a' | 'b') => {
@@ -298,7 +301,7 @@ function Step7DNA({ nextStep, dnaVector, setDnaVector }: any) {
   return (
     <div className="mx-auto max-w-3xl text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 07 / Taste DNA</div>
-      <h2 className="display text-4xl mb-3">Which draws you in?</h2>
+      <h2 className="display type-h2 mb-3">Which draws you in?</h2>
       <p className="text-[14px] text-[#68766d] mb-10">Don't overthink it. Just pick the room you'd rather sit in.</p>
       
       <div className="relative min-h-[400px]">
@@ -313,12 +316,12 @@ function Step7DNA({ nextStep, dnaVector, setDnaVector }: any) {
           >
             <button onClick={() => handleSelect('a')} className="group overflow-hidden rounded-2xl border border-[#d7cbbb] transition-all hover:-translate-y-1 hover:border-[#b8573b] hover:shadow-xl">
               <div className="aspect-[4/5] w-full overflow-hidden">
-                 <img src={getImageUrl(currentPair.a)} alt="Option A" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img onError={handleImageError} src={dnaImage(currentPair.a)} alt={`Option A: ${currentPair.aAlt}`} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               </div>
             </button>
             <button onClick={() => handleSelect('b')} className="group overflow-hidden rounded-2xl border border-[#d7cbbb] transition-all hover:-translate-y-1 hover:border-[#b8573b] hover:shadow-xl">
               <div className="aspect-[4/5] w-full overflow-hidden">
-                 <img src={getImageUrl(currentPair.b)} alt="Option B" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img onError={handleImageError} src={dnaImage(currentPair.b)} alt={`Option B: ${currentPair.bAlt}`} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               </div>
             </button>
           </motion.div>
@@ -355,7 +358,7 @@ function Step8Upload({ roomImage, setRoomImage, nextStep }: any) {
   return (
     <div className="mx-auto max-w-xl text-center">
       <div className="eyebrow mb-4 text-[#b8573b]">Step 08 / The space</div>
-      <h2 className="display text-4xl mb-4">Now let's see the actual room.</h2>
+      <h2 className="display type-h2 mb-4">Now let's see the actual room.</h2>
       <p className="text-[15px] text-[#68766d] mb-10">Everything you just told us shapes what happens next. Upload a clear photo of the room you want to transform.</p>
       
       {!roomImage ? (
@@ -371,7 +374,7 @@ function Step8Upload({ roomImage, setRoomImage, nextStep }: any) {
         </label>
       ) : (
         <div className="relative overflow-hidden rounded-2xl border border-[#d7cbbb] shadow-md">
-          <img src={roomImage} alt="Uploaded space" className="w-full object-cover aspect-[4/3]" />
+          <img onError={handleImageError} src={roomImage} alt="Uploaded space" className="w-full object-cover aspect-[4/3]" />
           <button 
             onClick={() => setRoomImage(null)}
             className="absolute right-4 top-4 rounded-full bg-black/60 p-2 text-white hover:bg-black"
@@ -478,7 +481,7 @@ function Step10Confirm({
     <div className="mx-auto max-w-4xl">
       <div className="grid gap-10 md:grid-cols-[1fr_1fr]">
         <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[#d7cbbb]">
-          <img src={roomImage || "https://images.unsplash.com/photo-1598928506311-c55dd58c2419?auto=format&fit=crop&w=800&q=80"} alt="Uploaded room" className="h-full w-full object-cover opacity-60" />
+           <img onError={handleImageError} src={roomImage || "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=800&q=80"} alt="Uploaded room" className="h-full w-full object-cover opacity-60" />
           
           <div className="absolute bottom-6 left-6 right-6 rounded-xl bg-white/95 p-5 shadow-2xl backdrop-blur-md">
             <div className="eyebrow mb-2 text-[#b8573b]">Your Persona</div>
@@ -977,12 +980,14 @@ function Step12Result({
                 <img
                   src={roomImage || getImageUrl(activeStyle.imageSearchTerm)}
                   alt="Your room used as the base for this demo concept"
+                   onError={handleImageError}
                   className="h-full w-full object-cover"
                 />
                 {roomImage && (
                   <img
                     src={getImageUrl(activeStyle.imageSearchTerm)}
                     alt=""
+                     onError={handleImageError}
                     className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-multiply"
                   />
                 )}

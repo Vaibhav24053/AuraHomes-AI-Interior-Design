@@ -1,0 +1,73 @@
+# AuraHomes — UI QA & Consistency Fix (Single Comprehensive Pass)
+
+Paste this whole thing into Replit Agent as one pass. This is a full audit-and-fix task — go through the entire site systematically, not just the items listed, and apply the same standards everywhere.
+
+---
+
+```
+Do a full UI consistency and bug-fix pass across the entire AuraHomes site. Treat this as a systematic audit — every issue type below should be checked and fixed on EVERY page/section it appears on, not just the specific instance mentioned.
+
+═══════════════════════════════════
+1. ROOT CAUSE: IMAGES ARE BROKEN SITEWIDE
+═══════════════════════════════════
+Nearly every image across the site (regional style cards, quiz swipe pairs, community feed cards, sandbox style tags) is showing a broken image icon instead of an actual photo. This is the single biggest issue — fix the root cause, not each instance individually:
+
+- Check what image source/URL pattern is currently being used (likely a deprecated or rate-limited Unsplash "source.unsplash.com" pattern, or a malformed URL). Replace it with a reliable working method: either properly formatted direct Unsplash photo URLs (images.unsplash.com/photo-{id}), or a stable placeholder image service, and verify images actually render in the preview before considering this done.
+- Add an onError fallback to every <img> tag (or next/image equivalent) site-wide: if an image fails to load, fall back to a solid warm-toned gradient placeholder (using the existing cream/terracotta palette) instead of showing a broken image icon — this ensures the UI never looks broken even if a specific image URL fails later.
+- For the regional style cards (src/data/regionalStyles.ts entries): use each entry's imageSearchTerm to source a real, relevant photo — verify each one actually shows something visually appropriate (wood interiors, courtyards, arches, etc.) not a random unrelated photo.
+- For the Design DNA swipe quiz (Option A / Option B pairs, currently completely blank): these need real distinct photos representing each side of the hidden taste axis (ornate vs clean, bold-color vs muted, warm-textured vs cool-minimal, dense vs spacious, traditional-motif vs contemporary, etc.) — source actual interior photos for all 8 pairs (16 images total), not placeholders.
+- For the community feed: each post needs a real, distinct before/after photo pair.
+
+═══════════════════════════════════
+2. TYPOGRAPHY SCALE — ENFORCE CONSISTENCY
+═══════════════════════════════════
+Define ONE explicit type scale in the design system (e.g., Tailwind theme extend or CSS custom properties) and apply it everywhere — no more ad-hoc font sizes per component:
+- H1 (page hero only): one consistent size across all pages that use a hero headline
+- H2 (section headers): one consistent size, used for every major section header sitewide
+- H3 (card titles): one consistent size
+- Body: one consistent size and line-height
+- Small/label text (eyebrow labels like "THE TOOLKIT", "STEP 03"): one consistent size
+Go through every page and replace any one-off font sizes with these scale values. The current site has noticeably inconsistent sizing between sections (some headlines much larger/smaller than others at the same hierarchy level) — audit and normalize this everywhere.
+
+═══════════════════════════════════
+3. CARD SIZING CONSISTENCY
+═══════════════════════════════════
+Any grid of cards (regional style picker, community feed, toolkit cards, sourcing table rows) must have UNIFORM card heights within that grid — use CSS Grid or Flexbox with items-stretch/h-full so cards never grow/shrink independently based on content length or missing images. Lock image containers to a fixed aspect-ratio (e.g., aspect-[4/3]) so a missing or short-caption card never collapses smaller than its siblings. Audit the community grid specifically — the current layout has visibly mismatched card heights.
+
+═══════════════════════════════════
+4. FIX THE "A CLEAR PATH..." 3-STEP SECTION ALIGNMENT
+═══════════════════════════════════
+The "Share your room and taste / Get a tailored redesign / Shop the plan in budget" 3-column section has broken alignment: the "01/02/03" numbers and icons are sitting at different vertical positions per column, and the heading/body text starts at inconsistent heights. Fix: use a CSS Grid with all three columns sharing the same row structure (number+icon row, then heading row, then body row, each row height matching across all 3 columns) so everything lines up on a shared baseline grid regardless of text length.
+
+═══════════════════════════════════
+5. COMMUNITY SECTION — RESTORE REAL PERSONALITY
+═══════════════════════════════════
+The current community page just re-displays the regional style list as generic "[Style Name] Interpretation" cards with no real user personality — this reads as duplicate content from the style picker rather than an actual community. Fix:
+- Each community post needs: a real user avatar/initial, a first-name username, a relative timestamp ("3 days ago"), a genuine-sounding first-person caption about THEIR specific room (not a repeat of the style's generic description), a like count, and a comment count — matching the warmth of a real social feed, not a style catalog.
+- Keep the style tag as a small badge on each post (useful for filtering) but it should not be the headline of the card — the user's own story is.
+- Keep the Sandbox and DIY Workshops sections as already built, just fix their card sizing/image issues per sections 1 and 3 above.
+
+═══════════════════════════════════
+6. BUDGET PAGE — MAKE IT ACTUALLY INTERACTIVE (CLIENT-SIDE, NO BACKEND YET)
+═══════════════════════════════════
+The budget slider and Lump Sum/EMI toggle currently don't affect the displayed numbers — it looks broken even though no backend is connected yet. Fix this with pure client-side logic (no API needed):
+- Moving the "Total Project Budget" slider should proportionally scale the example line-item prices shown in the Tiered Sourcing table (e.g., use a simple multiplier based on how far the slider is from the default value)
+- Toggling to "Monthly EMI" should show a tenure slider (6-36 months) and calculate + display a real monthly payment figure using a standard EMI formula against the current budget value and a fixed ~13% annual interest rate — this is simple arithmetic, do it in the frontend directly
+- The "Estimated Total" row at the bottom of the sourcing table should update live as the budget slider moves
+This makes the page feel functional and responsive even before the real backend is wired in.
+
+═══════════════════════════════════
+7. MOTION & TRANSITIONS — VERIFY THESE ARE ACTUALLY IMPLEMENTED
+═══════════════════════════════════
+This has been requested twice before and still isn't visible on the live site. Explicitly verify and implement, then confirm each one by name in your response:
+- The floating "Style DNA" / mood card on the hero image must have a continuous subtle float or glow-pulse animation (check: is there a framer-motion animate loop on this component right now? If not, add one)
+- Regional style picker hover-accordion: confirm the image cross-fade transition actually fires on hover, with smooth 300-400ms timing
+- Route changes must fade via framer-motion's AnimatePresence — confirm this wrapper actually exists around the router outlet, not just imported and unused
+- Before/after slider: confirm the auto-sweep-on-scroll-into-view animation is actually wired to an intersection observer and fires once per page load
+- Scroll-reveal fade+translate animations on section entry: confirm these are present on every major section, not just the hero
+
+═══════════════════════════════════
+8. FINAL VERIFICATION
+═══════════════════════════════════
+After completing all of the above, go through the site page by page (Landing, Design/Quiz flow, Budget, Community) and confirm no broken images, no misaligned sections, and consistent card/type sizing remain. List anything you were unable to fully verify or fix so it can be addressed precisely afterward.
+```

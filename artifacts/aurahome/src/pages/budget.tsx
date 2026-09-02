@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IndianRupee, ChevronRight, Info } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
+import { Reveal } from '@/components/ui/reveal';
 
 export default function BudgetPage() {
   const [budgetType, setBudgetType] = useState<'lumpsum' | 'emi'>('lumpsum');
@@ -24,6 +25,7 @@ export default function BudgetPage() {
   };
 
   const currentEMI = calculateEMI(lumpSum, tenure);
+  const scalePrice = (price: number) => Math.round((price * (lumpSum / 250000)) / 100) * 100;
 
   const items = [
     {
@@ -48,6 +50,20 @@ export default function BudgetPage() {
     }
   ];
 
+  const scaledItems = items.map(item => ({
+    ...item,
+    prices: {
+      branded: scalePrice(item.prices.branded),
+      local: scalePrice(item.prices.local),
+      artisan: scalePrice(item.prices.artisan),
+    },
+  }));
+
+  const totals = (['branded', 'local', 'artisan'] as const).reduce((result, tier) => ({
+    ...result,
+    [tier]: scaledItems.reduce((sum, item) => sum + item.prices[tier], 0),
+  }), { branded: 0, local: 0, artisan: 0 });
+
   return (
     <main className="aura-shell grain route-grid min-h-[100dvh] bg-[#f3ecdf] px-5 pb-24 pt-36 text-[#29352f] sm:px-10 lg:px-20">
       <div className="mx-auto max-w-[1050px]">
@@ -55,12 +71,12 @@ export default function BudgetPage() {
           <ChevronRight size={14} className="rotate-180" /> Back to AuraHomes
         </Link>
         
-        <div className="grid items-end gap-10 md:grid-cols-[1fr_.8fr] mb-20">
+        <Reveal className="grid items-end gap-10 md:grid-cols-[1fr_.8fr] mb-20">
           <div>
             <div className="eyebrow flex items-center gap-3 text-[#b8573b]">
               <span className="h-px w-7 bg-[#b8573b]" />The sensible edit
             </div>
-            <h1 className="display mt-6 max-w-[680px] text-[clamp(4rem,9vw,8.5rem)] leading-[.82] tracking-[-.06em]">
+            <h1 className="display type-h1 mt-6 max-w-[680px]">
               Beauty that<br /><span className="text-[#b8573b] italic">adds up.</span>
             </h1>
             <p className="mt-8 max-w-[430px] text-[16px] leading-[1.8] text-[#536059]">
@@ -76,12 +92,12 @@ export default function BudgetPage() {
               <p className="display mt-2 text-3xl leading-none">Know exactly where it goes.</p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="grid min-w-0 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+        <Reveal className="grid min-w-0 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           {/* Budget Calculator */}
           <div className="rounded-2xl border border-[#d7cbbb] bg-white/40 p-8 shadow-sm">
-            <h2 className="display text-3xl mb-6">Plan your spend</h2>
+            <h2 className="display type-h3 mb-6">Plan your spend</h2>
             
             <div className="mb-8 flex gap-2 rounded-lg border border-[#d7cbbb] bg-[#f3ecdf] p-1">
               <button 
@@ -150,7 +166,7 @@ export default function BudgetPage() {
           {/* Sourcing Tiers */}
           <div className="min-w-0">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="display text-3xl">Tiered Sourcing</h2>
+              <h2 className="display type-h3">Tiered Sourcing</h2>
               <button onClick={handleDownload} className="text-[13px] font-medium text-[#b8573b] hover:underline">Download List</button>
             </div>
             
@@ -158,9 +174,9 @@ export default function BudgetPage() {
               Swipe horizontally to compare all three sourcing tiers.
             </p>
             <div className="w-full max-w-full overflow-x-auto rounded-2xl border border-[#d7cbbb] bg-white">
-              <div className="min-w-[620px]">
+              <div className="min-w-[560px]">
               {/* Header */}
-              <div className="grid grid-cols-[1fr_100px_100px_100px] gap-4 border-b border-[#d7cbbb] bg-[#f3ecdf]/50 p-4 text-[11px] font-medium uppercase tracking-wider text-[#68766d]">
+              <div className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 border-b border-[#d7cbbb] bg-[#f3ecdf]/50 p-4 text-[11px] font-medium uppercase tracking-wider text-[#68766d]">
                 <div>Item</div>
                 <div className="text-right">Branded</div>
                 <div className="text-right">Local</div>
@@ -169,8 +185,8 @@ export default function BudgetPage() {
               
               {/* Items */}
               <div className="divide-y divide-[#d7cbbb]/50">
-                {items.map((item, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_100px_100px_100px] gap-4 p-4 items-center hover:bg-[#f3ecdf]/20 transition-colors">
+                {scaledItems.map((item, idx) => (
+                   <div key={idx} className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 p-4 items-center hover:bg-[#f3ecdf]/20 transition-colors">
                     <div>
                       <div className="font-medium text-[#29352f]">{item.name}</div>
                       <div className="text-[12px] text-[#b8573b] mt-0.5 flex items-center gap-1">
@@ -185,22 +201,22 @@ export default function BudgetPage() {
               </div>
               
               {/* Total Row */}
-              <div className="grid grid-cols-[1fr_100px_100px_100px] gap-4 bg-[#29352f] p-4 text-white">
+              <div className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 bg-[#29352f] p-4 text-white">
                 <div className="font-medium">Estimated Total</div>
                 <div className="text-right font-mono text-[14px] opacity-70">
-                  ₹{items.reduce((sum, item) => sum + item.prices.branded, 0).toLocaleString('en-IN')}
+                  ₹{totals.branded.toLocaleString('en-IN')}
                 </div>
                 <div className="text-right font-mono text-[14px] opacity-70">
-                  ₹{items.reduce((sum, item) => sum + item.prices.local, 0).toLocaleString('en-IN')}
+                  ₹{totals.local.toLocaleString('en-IN')}
                 </div>
                 <div className="text-right font-mono text-[15px] font-bold text-[#d89a48]">
-                  ₹{items.reduce((sum, item) => sum + item.prices.artisan, 0).toLocaleString('en-IN')}
+                  ₹{totals.artisan.toLocaleString('en-IN')}
                 </div>
               </div>
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </main>
   );

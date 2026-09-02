@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Sparkles, ArrowRight, ArrowDownRight, ArrowUpRight, Compass, MoveHorizontal, Palette, House, IndianRupee } from 'lucide-react';
 import { Reveal } from '@/components/ui/reveal';
 import { regionalStyles, getImageUrl } from '@/data/regionalStyles';
+import { handleImageError } from '@/lib/imageFallback';
 
 function Hero() {
   return (
@@ -18,7 +19,7 @@ function Hero() {
             </div>
           </Reveal>
           <Reveal delay="reveal-delay-1">
-            <h1 className="display text-[clamp(4.2rem,8.4vw,8.2rem)] leading-[.84] tracking-[-.06em] text-[#29352f]">
+            <h1 className="display type-h1 text-[#29352f]">
               Your Dream Home,<br /><span className="text-gradient">Designed by AI.</span>
             </h1>
           </Reveal>
@@ -49,7 +50,7 @@ function Hero() {
           <div className="relative mx-auto max-w-[570px]">
             <div className="absolute -left-8 top-8 h-[88%] w-16 rounded-[50%] bg-[#d89a48]/25 blur-2xl sm:-left-14" />
             <div className="image-zoom relative aspect-[.82] overflow-hidden rounded-[13rem_13rem_1rem_1rem] border-[10px] border-[#e3d6c6] shadow-[0_35px_70px_rgba(77,51,31,.18)] sm:aspect-[.9]">
-              <img className="h-full w-full object-cover" src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1100&q=85" alt="Sunlit Indian-inspired living room with a low sofa and warm wood" />
+              <img onError={handleImageError} className="h-full w-full object-cover" src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1100&q=85" alt="Sunlit Indian-inspired living room with a low sofa and warm wood" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#29352f]/40 via-transparent to-transparent" />
               <div className="absolute bottom-7 left-7 right-7 flex items-end justify-between text-[#f8f0e5]">
                 <div>
@@ -59,14 +60,18 @@ function Hero() {
                 <span className="grid size-11 place-items-center rounded-full border border-[#f8f0e5]/60"><ArrowDownRight size={18} /></span>
               </div>
             </div>
-            <div className="float-slow float-card absolute -right-5 top-[16%] w-44 rounded-2xl border border-[#e3d6c6] bg-[#f8f0e5]/95 p-4 shadow-[0_18px_35px_rgba(77,51,31,.12)] sm:-right-12">
-              <div className="mb-5 flex items-center justify-between"><span className="eyebrow text-[#b8573b]">Your mood</span><Sparkles size={15} className="text-[#d89a48]" /></div>
-              <div className="display text-[28px] leading-none">Warm<br /><span className="italic text-[#536059]">and grounded</span></div>
-              <div className="mt-4 h-1 rounded-full bg-[#e4d8c9]"><div className="h-full w-[76%] rounded-full bg-[#b8573b]" /></div>
-            </div>
-            <div className="float-slow-2 float-card absolute -bottom-5 -left-5 w-36 rounded-2xl bg-[#29352f] p-4 text-[#f8f0e5] shadow-xl sm:-left-11">
-              <Compass size={18} className="mb-6 text-[#d89a48]" /><div className="eyebrow text-[#f8f0e5]/55">Style DNA</div><div className="mt-1 text-sm">Modern heirloom</div>
-            </div>
+            <motion.div animate={{ filter: ['drop-shadow(0 10px 18px rgba(77,51,31,.08))', 'drop-shadow(0 16px 27px rgba(184,87,59,.2))', 'drop-shadow(0 10px 18px rgba(77,51,31,.08))'] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }} className="absolute -right-5 top-[16%] w-44 sm:-right-12">
+              <div data-testid="hero-mood-card" className="float-slow rounded-2xl border border-[#e3d6c6] bg-[#f8f0e5]/95 p-4 shadow-[0_18px_35px_rgba(77,51,31,.12)]">
+                <div className="mb-5 flex items-center justify-between"><span className="eyebrow text-[#b8573b]">Your mood</span><Sparkles size={15} className="text-[#d89a48]" /></div>
+                <div className="display text-[28px] leading-none">Warm<br /><span className="italic text-[#536059]">and grounded</span></div>
+                <div className="mt-4 h-1 rounded-full bg-[#e4d8c9]"><div className="h-full w-[76%] rounded-full bg-[#b8573b]" /></div>
+              </div>
+            </motion.div>
+            <motion.div animate={{ filter: ['drop-shadow(0 10px 18px rgba(77,51,31,.08))', 'drop-shadow(0 16px 24px rgba(31,92,87,.2))', 'drop-shadow(0 10px 18px rgba(77,51,31,.08))'] }} transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }} className="absolute -bottom-5 -left-5 w-36 sm:-left-11">
+              <div data-testid="hero-style-dna-card" className="float-slow-2 rounded-2xl bg-[#29352f] p-4 text-[#f8f0e5] shadow-xl">
+                <Compass size={18} className="mb-6 text-[#d89a48]" /><div className="eyebrow text-[#f8f0e5]/55">Style DNA</div><div className="mt-1 text-sm">Modern heirloom</div>
+              </div>
+            </motion.div>
           </div>
         </Reveal>
       </div>
@@ -110,6 +115,8 @@ function StyleAccordion({ items }: { items: typeof regionalStyles }) {
             onFocus={() => setActiveIndex(index)}
             onClick={() => setActiveIndex(index)}
             aria-pressed={activeIndex === index}
+            data-testid={`regional-style-option-${item.id}`}
+            onPointerEnter={() => setActiveIndex(index)}
           >
             <span>
               <span className="mono block text-[11px] tracking-[.14em] opacity-60">{item.direction} / 0{index + 1}</span>
@@ -120,16 +127,14 @@ function StyleAccordion({ items }: { items: typeof regionalStyles }) {
         ))}
       </div>
       <div className="relative min-h-[380px] overflow-hidden rounded-[1.25rem] bg-[#d8c8b7]">
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="sync" initial={false}>
           <motion.img
             key={activeItem.id}
+            data-testid="regional-accordion-image"
             src={getImageUrl(activeItem.imageSearchTerm)}
             alt={activeItem.name}
-            className="absolute inset-0 h-full w-full object-cover"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+              onError={handleImageError}
+            className="regional-image-enter absolute inset-0 h-full w-full object-cover"
           />
         </AnimatePresence>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#29352f]/80 to-transparent p-8 pt-24 text-[#f3ecdf]">
@@ -154,7 +159,7 @@ function RegionalStyles() {
           <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
             <div>
               <div className="eyebrow text-[#b8573b]">Regional style picker</div>
-              <h2 className="display mt-5 max-w-[680px] text-[clamp(3.2rem,6vw,6rem)] leading-[.88] tracking-[-.05em]">
+              <h2 className="display type-h2 mt-5 max-w-[680px]">
                 A point of view for <span className="text-[#b8573b]">everywhere.</span>
               </h2>
             </div>
@@ -196,7 +201,7 @@ function HowItWorks() {
           <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
             <div><div className="eyebrow text-[#b8573b]">The Aura method</div></div>
             <div className="max-w-[700px]">
-              <h2 className="display text-[clamp(3.2rem,6vw,6rem)] leading-[.9] tracking-[-.05em]">
+              <h2 className="display type-h2">
                 A clear path from room photo to <span className="text-[#b8573b]">redesign plan.</span>
               </h2>
               <p className="mt-7 max-w-[520px] text-[15px] leading-[1.8] text-[#29352f] opacity-80">
@@ -205,16 +210,16 @@ function HowItWorks() {
             </div>
           </div>
         </Reveal>
-        <div className="mt-20 grid gap-5 md:grid-cols-3">
+        <div className="uniform-card-grid mt-20 grid gap-5 md:grid-cols-3">
           {steps.map(({ no, icon: Icon, title, text }, index) => (
             <Reveal key={no} delay={`reveal-delay-${index + 1}`}>
-              <div className={`border-t border-[#cfc2b2] pt-5 ${index === 1 ? 'md:mt-12' : ''}`}>
-                <div className="flex items-center justify-between">
+              <div className="grid h-full grid-rows-[4rem_7.5rem_1fr] border-t border-[#cfc2b2] pt-5">
+                <div className="flex items-start justify-between">
                   <span className="mono text-[12px] text-[#b8573b]">{no}</span>
                   <Icon size={20} strokeWidth={1.5} className="text-[#b8573b]" />
                 </div>
-                <h3 className="display mt-16 text-[34px] leading-none">{title}</h3>
-                <p className="mt-5 max-w-[290px] text-[14px] leading-[1.8] text-[#536059]">{text}</p>
+                <h3 className="display type-h3 self-start">{title}</h3>
+                <p className="type-body max-w-[290px] text-[#536059]">{text}</p>
               </div>
             </Reveal>
           ))}
@@ -283,7 +288,7 @@ function Comparison() {
             <div className="eyebrow flex items-center gap-3 text-[#557468]">
               <span className="h-px w-7 bg-[#557468]" />A little proof
             </div>
-            <h2 className="display mt-6 text-[clamp(3.6rem,6vw,6.5rem)] leading-[.86] tracking-[-.05em]">
+            <h2 className="display type-h2 mt-6">
               See a room<br /><span className="text-[#b8573b]">change.</span>
             </h2>
             <p className="mt-7 max-w-[360px] text-[15px] leading-[1.8] text-[#29352f] opacity-80">
@@ -313,9 +318,9 @@ function Comparison() {
             }} 
             data-testid="comparison-slider"
           >
-            <img className="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85" alt="A calm living room before an AuraHomes transformation" />
+            <img onError={handleImageError} className="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85" alt="A calm living room before an AuraHomes transformation" />
             <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
-              <img className="h-full w-full object-cover" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=85" alt="A warm, layered living room after an AuraHomes transformation" />
+              <img onError={handleImageError} className="h-full w-full object-cover" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=85" alt="A warm, layered living room after an AuraHomes transformation" />
             </div>
             <div className="absolute left-5 top-5 rounded-full bg-[#f3ecdf]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#536059]">Before</div>
             <div className="absolute right-5 top-5 rounded-full bg-[#29352f]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#f3ecdf]">After</div>
@@ -402,7 +407,7 @@ function Toolkit() {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <div className="eyebrow text-[#b8573b]">The toolkit</div>
-              <h2 className="display mt-5 text-[clamp(3.2rem,6vw,6rem)] leading-[.88] tracking-[-.05em]">
+              <h2 className="display type-h2 mt-5">
                 Tools to redesign<br /><span className="text-[#b8573b]">your room.</span>
               </h2>
             </div>
@@ -411,7 +416,7 @@ function Toolkit() {
             </p>
           </div>
         </Reveal>
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="uniform-card-grid mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {toolkit.map(({ icon: Icon, tag, title, text, href, color }, index) => (
             <Reveal key={title} delay={`reveal-delay-${(index % 3) + 1}`}>
               <Link href={href} className="toolkit-card group block min-h-[300px] rounded-[1.25rem] p-6" style={{ backgroundColor: color }} data-testid={`card-toolkit-${index}`}>
@@ -423,7 +428,7 @@ function Toolkit() {
                 </div>
                 <div className="mt-20">
                   <div className="eyebrow text-[#6b776e]">{tag}</div>
-                  <h3 className="display mt-2 text-[32px] leading-[.95]">{title}</h3>
+                   <h3 className="display type-h3 mt-2">{title}</h3>
                   <p className="mt-4 text-[13px] leading-[1.6] text-[#536059]">{text}</p>
                 </div>
               </Link>
@@ -447,12 +452,12 @@ function DarkFeature() {
         <Reveal>
           <div className="max-w-[720px]">
             <div className="eyebrow text-[#d89a48]">Built for Indian homes</div>
-            <h2 className="display mt-6 text-[clamp(3.7rem,6.8vw,7rem)] leading-[.85] tracking-[-.055em]">
+            <h2 className="display type-h2 mt-6">
               Design that understands the <span className="text-[#d89a48] italic">whole picture.</span>
             </h2>
           </div>
         </Reveal>
-        <div className="mt-16 grid gap-4 md:grid-cols-3">
+        <div className="uniform-card-grid mt-16 grid gap-4 md:grid-cols-3">
           {features.map(({ title, text, accent, icon: Icon, href }, index) => (
             <Reveal key={title} delay={`reveal-delay-${index + 1}`}>
               <Link href={href} className="group flex min-h-[310px] flex-col justify-between rounded-[1.25rem] border border-[#f3ecdf]/15 bg-[#f3ecdf]/[.04] p-6 transition-all hover:-translate-y-2 hover:bg-[#f3ecdf]/[.08]" data-testid={`card-feature-${index}`}>
@@ -464,7 +469,7 @@ function DarkFeature() {
                 </div>
                 <div>
                   <div className="eyebrow mb-3" style={{ color: accent }}>Made for real life</div>
-                  <h3 className="display text-3xl leading-[.95]">{title}</h3>
+                  <h3 className="display type-h3">{title}</h3>
                   <p className="mt-5 max-w-[280px] text-[14px] leading-[1.6] text-[#b5c0b8]">{text}</p>
                 </div>
               </Link>
@@ -484,7 +489,7 @@ function FinalCta() {
       <Reveal>
         <div className="relative mx-auto max-w-[900px] text-center">
           <div className="eyebrow text-[#66705e]">Your next room is waiting</div>
-          <h2 className="display mt-5 text-[clamp(4rem,9vw,9rem)] leading-[.82] tracking-[-.06em]">
+          <h2 className="display type-h2 mt-5">
             Redesign your<br /><span className="italic">next room.</span>
           </h2>
           <p className="mx-auto mt-8 max-w-[440px] text-[15px] leading-[1.8] text-[#29352f] opacity-80">

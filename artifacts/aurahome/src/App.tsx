@@ -26,10 +26,11 @@ function Router() {
       <motion.div
         key={location}
         className="min-h-screen"
-        initial={{ opacity: 0 }}
+        data-testid="route-outlet"
+        initial={{ opacity: 0.12, y: 8 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.34, ease: 'easeOut' }}
+        exit={{ opacity: 0.08, y: -5 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <RoutedErrorBoundary>
           <Switch>
