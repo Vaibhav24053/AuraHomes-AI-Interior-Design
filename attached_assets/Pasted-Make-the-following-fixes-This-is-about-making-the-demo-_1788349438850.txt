@@ -1,0 +1,48 @@
+Make the following fixes. This is about making the demo feel real and complete, not just structurally correct.
+
+═══════════════════════════════════
+1. CONNECT THE ACTUAL BACKEND — STOP SHOWING THE DEMO DISCLAIMER
+═══════════════════════════════════
+The final "Ready to generate" step currently shows a translucent placeholder image and a disclaimer: "This is an interactive frontend demo, not a photorealistic AI render. Connect the generation adapter to a production image model to create the final redesign." The backend API routes (/api/generate-design, /api/detect-context, /api/vastu-check, /api/design-archetype) already exist — wire this page to actually call them:
+
+- On "Generate My Design", send the uploaded room photo + compiled prompt (style/persona, tenure flag, Vastu corrections, furniture-only mode + selected item if applicable) to POST /api/generate-design
+- Show a proper loading state while waiting (not the demo placeholder) — something like a shimmer/skeleton over the room photo with rotating status text ("Analyzing your space...", "Applying your style...", "Finalizing details...")
+- Display the REAL returned image once generation completes, with a retry button if the call fails
+- Remove the "This is an interactive frontend demo" disclaimer entirely once this is wired — it should no longer be true
+- Do the same for the Vastu insights (call /api/vastu-check with real detected room data) and the Persona reveal (call /api/design-archetype with real quiz answers) rather than any hardcoded "Grounded Collector" placeholder result
+
+═══════════════════════════════════
+2. AR-STYLE FURNITURE PREVIEW (realistic scope — not full spatial AR)
+═══════════════════════════════════
+Build an "AR View" mode for the "One Piece" (furniture-only) flow specifically:
+- Request camera access (getUserMedia) and show the live camera feed full-screen
+- Before showing the live feed, ask ONE quick calibration question: "About how wide is this wall/space? (in feet)" — a simple slider or number input. This replaces true depth-sensing with a manual scale reference.
+- Overlay a 2D cutout image of the selected furniture item (sofa/bed/dining table/wardrobe/armchair — plus ADD an "Accessories" category for lamps, rugs, wall art, plants) scaled proportionally based on the wall-width input, positioned in the center of the frame
+- Let the user drag the overlay left/right and pinch/scroll to resize it slightly, so it feels interactive even without true spatial tracking
+- Add a small honest label on this view: "AR Preview — drag to position" (not claiming full spatial detection)
+- A "Capture" button that takes a snapshot of the camera+overlay composite, which can then be saved/shared like a regular result
+
+This is a 2D-overlay-on-live-camera approach, not true 3D placement — but it delivers the "point your phone at your room and see furniture options" experience you described in a way that's achievable now.
+
+═══════════════════════════════════
+3. EXPAND SOURCING DATA WITH REALISTIC DUMMY NAMES, LINKS, AND ROOM-SIZE SCALING
+═══════════════════════════════════
+The current Tiered Sourcing table has only 2-4 items and no product names/links, which makes it feel thin and unfinished. Fix:
+
+- Expand each generated design's sourcing list to 6-10 realistic items appropriate to the room type (e.g., for a bedroom: bed frame, mattress, wardrobe, bedside tables x2, floor lamp, curtains, rug, wall art, desk/chair if space allows)
+- For EACH item, generate realistic (clearly dummy/placeholder, but well-formed) data across all three tiers:
+  - BRANDED: realistic product name + a real Indian retailer name (Pepperfry, Urban Ladder, IKEA India, HomeCentre, Nilkamal) + a dummy but properly-formatted link (e.g., https://www.pepperfry.com/product/[slug]-[id].html — doesn't need to resolve to a real page, just look authentic)
+  - LOCAL: a realistic local-market name (e.g., "Kirti Nagar Furniture Market, Delhi", "Chor Bazaar Wood Works, Mumbai", or a generic "[City] Wholesale Furniture Market" if city is known from the quiz) + no link needed, just a location-style reference
+  - ARTISAN: a realistic-sounding individual/workshop name (e.g., "Ravi Woodcraft, Kochi", "Meenakshi Handlooms, Chennai") + a short one-line craft description, matching the regional style selected
+- Add a ROOM SIZE input to the Budget/Sourcing page (Small: ~100 sq ft / Medium: ~150 sq ft / Large: ~250+ sq ft as a simple selector) that scales the total item list and quantities — a "Large" living room should suggest more/bigger items than a "Small" one, and the Estimated Total should reflect that
+- Keep pricing proportional to the existing budget slider logic already built, just apply it across the fuller item list
+
+═══════════════════════════════════
+4. FIX THE MISMATCHED QUIZ SWIPE IMAGE (Pair 7 of 8)
+═══════════════════════════════════
+On the Design DNA swipe round, Pair 7's "Option A" currently shows an underwater ocean photo with bubbles — completely unrelated to interior design and doesn't fit any sensible taste axis. Audit ALL 8 image pairs and replace any that aren't clearly two interior/room/home-related images representing a real taste axis (ornate-vs-clean, bold-color-vs-muted, warm-textured-vs-cool-minimal, dense-vs-spacious, traditional-motif-vs-contemporary, etc.) — every single option across all 8 pairs must be a real interior or home-exterior-adjacent photo, never an unrelated stock image like this one.
+
+═══════════════════════════════════
+5. VERIFICATION
+═══════════════════════════════════
+After these changes, walk through the full flow once yourself (quiz → persona → generate → AR preview → budget/sourcing) and confirm: no demo disclaimers remain where real data should show, all 8 quiz image pairs are visually sensible, the AR preview actually requests camera access and overlays a furniture cutout, and the sourcing table shows a full realistic list with names/links across all three tiers. Report anything that couldn't be fully verified.

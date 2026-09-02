@@ -27,6 +27,18 @@ if (!basePath) {
   );
 }
 
+const apiProxy = {
+  target: process.env.API_SERVER_URL ?? 'http://127.0.0.1:8080',
+  changeOrigin: true,
+  rewrite: (url: string) => url.replace(/^\/backend-api/, '/api'),
+  configure: (proxy: { on: (event: string, handler: (request: { setHeader: (name: string, value: string) => void }) => void) => void }) => {
+    proxy.on('proxyReq', (request) => {
+      const apiKey = process.env.AURAHOMES_API_KEY;
+      if (apiKey) request.setHeader('x-api-key', apiKey);
+    });
+  },
+};
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -69,6 +81,9 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      '/backend-api': apiProxy,
+    },
     fs: {
       strict: true,
     },
@@ -77,5 +92,8 @@ export default defineConfig({
     port,
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      '/backend-api': apiProxy,
+    },
   },
 });

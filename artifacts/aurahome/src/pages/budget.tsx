@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { IndianRupee, ChevronRight, Info } from 'lucide-react';
+import { IndianRupee, ChevronRight } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { Reveal } from '@/components/ui/reveal';
+import { getSourcingCatalog, type RoomSize, type SourcingTier } from '@/data/sourcing';
 
 export default function BudgetPage() {
   const [budgetType, setBudgetType] = useState<'lumpsum' | 'emi'>('lumpsum');
   const [lumpSum, setLumpSum] = useState(250000);
   const [tenure, setTenure] = useState(12);
+  const [roomSize, setRoomSize] = useState<RoomSize>('medium');
   const { toast } = useToast();
 
   const handleDownload = () => {
@@ -27,39 +29,17 @@ export default function BudgetPage() {
   const currentEMI = calculateEMI(lumpSum, tenure);
   const scalePrice = (price: number) => Math.round((price * (lumpSum / 250000)) / 100) * 100;
 
-  const items = [
-    {
-      name: 'Solid Wood Bed Frame',
-      artisanDesc: 'Hand-carved reclaimed teak from local workshop',
-      prices: { branded: 85000, local: 35000, artisan: 52000 }
-    },
-    {
-      name: 'Textured Wool Rug',
-      artisanDesc: 'Hand-loomed natural undyed wool',
-      prices: { branded: 18000, local: 6500, artisan: 12000 }
-    },
-    {
-      name: 'Terracotta Accent Lamp',
-      artisanDesc: 'Thrown by regional potters cluster',
-      prices: { branded: 6500, local: 1200, artisan: 3800 }
-    },
-    {
-      name: 'Linen Curtains (Set of 2)',
-      artisanDesc: 'Hand block printed natural linen',
-      prices: { branded: 12000, local: 4500, artisan: 7500 }
-    }
-  ];
-
+  const items = getSourcingCatalog(roomSize);
   const scaledItems = items.map(item => ({
     ...item,
     prices: {
-      branded: scalePrice(item.prices.branded),
-      local: scalePrice(item.prices.local),
-      artisan: scalePrice(item.prices.artisan),
+      branded: scalePrice(item.tiers.branded.basePrice * item.quantity),
+      local: scalePrice(item.tiers.local.basePrice * item.quantity),
+      artisan: scalePrice(item.tiers.artisan.basePrice * item.quantity),
     },
   }));
 
-  const totals = (['branded', 'local', 'artisan'] as const).reduce((result, tier) => ({
+  const totals = (['branded', 'local', 'artisan'] as SourcingTier[]).reduce((result, tier) => ({
     ...result,
     [tier]: scaledItems.reduce((sum, item) => sum + item.prices[tier], 0),
   }), { branded: 0, local: 0, artisan: 0 });
@@ -134,6 +114,35 @@ export default function BudgetPage() {
               </div>
             </div>
 
+            <div className="mb-8">
+              <span className="mb-3 block text-[13px] font-medium text-[#536059]">Room size</span>
+              <div className="grid grid-cols-3 gap-2" data-testid="room-size-controls">
+                {([
+                  ['small', 'Small', '~100 sq ft'],
+                  ['medium', 'Medium', '~150 sq ft'],
+                  ['large', 'Large', '~250+ sq ft'],
+                ] as const).map(([size, label, detail]) => (
+                  <button
+                    key={size}
+                    type="button"
+                    data-testid={`button-room-size-${size}`}
+                    onClick={() => setRoomSize(size)}
+                    className={`rounded-lg border px-2 py-3 text-left transition-colors ${
+                      roomSize === size
+                        ? 'border-[#b8573b] bg-[#b8573b]/10 text-[#29352f]'
+                        : 'border-[#d7cbbb] bg-white/50 text-[#68766d] hover:bg-white'
+                    }`}
+                  >
+                    <span className="block text-[12px] font-medium">{label}</span>
+                    <span className="block text-[10px] opacity-75">{detail}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#68766d]" data-testid="text-room-size-summary">
+                {scaledItems.length} essentials sized for a {roomSize} bedroom. Quantities and optional pieces adapt with the room.
+              </p>
+            </div>
+
             {budgetType === 'emi' && (
               <div className="mb-8 animate-in fade-in slide-in-from-top-4">
                 <div className="flex justify-between items-end mb-4">
@@ -174,42 +183,51 @@ export default function BudgetPage() {
               Swipe horizontally to compare all three sourcing tiers.
             </p>
             <div className="w-full max-w-full overflow-x-auto rounded-2xl border border-[#d7cbbb] bg-white">
-              <div className="min-w-[560px]">
+              <div className="min-w-[920px]">
               {/* Header */}
-              <div className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 border-b border-[#d7cbbb] bg-[#f3ecdf]/50 p-4 text-[11px] font-medium uppercase tracking-wider text-[#68766d]">
+              <div className="grid grid-cols-[minmax(190px,1fr)_minmax(185px,.9fr)_minmax(185px,.9fr)_minmax(185px,.9fr)] gap-3 border-b border-[#d7cbbb] bg-[#f3ecdf]/50 p-4 text-[11px] font-medium uppercase tracking-wider text-[#68766d]">
                 <div>Item</div>
-                <div className="text-right">Branded</div>
-                <div className="text-right">Local</div>
-                <div className="text-right text-[#b8573b]">Artisan</div>
+                <div>Branded</div>
+                <div>Local</div>
+                <div className="text-[#b8573b]">Artisan</div>
               </div>
               
               {/* Items */}
               <div className="divide-y divide-[#d7cbbb]/50">
-                {scaledItems.map((item, idx) => (
-                   <div key={idx} className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 p-4 items-center hover:bg-[#f3ecdf]/20 transition-colors">
+                 {scaledItems.map((item) => (
+                    <div key={item.id} data-testid={`row-sourcing-item-${item.id}`} className="grid grid-cols-[minmax(190px,1fr)_minmax(185px,.9fr)_minmax(185px,.9fr)_minmax(185px,.9fr)] gap-3 p-4 hover:bg-[#f3ecdf]/20 transition-colors">
                     <div>
-                      <div className="font-medium text-[#29352f]">{item.name}</div>
-                      <div className="text-[12px] text-[#b8573b] mt-0.5 flex items-center gap-1">
-                        <Info size={12} /> {item.artisanDesc}
-                      </div>
+                       <div className="font-medium text-[#29352f]">{item.name} <span className="text-[#68766d]">×{item.quantity}</span></div>
+                       <div className="mt-1 text-[11px] text-[#68766d]">Price includes selected quantity</div>
                     </div>
-                    <div className="text-right font-mono text-[13px] text-[#68766d]">₹{item.prices.branded.toLocaleString('en-IN')}</div>
-                    <div className="text-right font-mono text-[13px] text-[#68766d]">₹{item.prices.local.toLocaleString('en-IN')}</div>
-                    <div className="text-right font-mono text-[14px] font-medium text-[#b8573b]">₹{item.prices.artisan.toLocaleString('en-IN')}</div>
+                     {(['branded', 'local', 'artisan'] as SourcingTier[]).map((tier) => {
+                       const option = item.tiers[tier];
+                       return (
+                         <div key={tier}>
+                           {option.link ? (
+                             <a href={option.link} target="_blank" rel="noreferrer" data-testid={`link-${tier}-${item.id}`} className="block text-[12px] font-medium text-[#29352f] hover:text-[#b8573b] hover:underline">{option.supplier}</a>
+                           ) : (
+                             <div className="text-[12px] font-medium text-[#29352f]">{option.supplier}</div>
+                           )}
+                           <div className="mt-0.5 text-[11px] leading-snug text-[#68766d]">{option.detail}</div>
+                           <div className={`mt-2 font-mono text-[13px] ${tier === 'artisan' ? 'font-medium text-[#b8573b]' : 'text-[#536059]'}`}>₹{item.prices[tier].toLocaleString('en-IN')}</div>
+                         </div>
+                       );
+                     })}
                   </div>
                 ))}
               </div>
               
               {/* Total Row */}
-              <div className="grid grid-cols-[minmax(190px,1fr)_84px_84px_84px] gap-3 bg-[#29352f] p-4 text-white">
+              <div className="grid grid-cols-[minmax(190px,1fr)_minmax(185px,.9fr)_minmax(185px,.9fr)_minmax(185px,.9fr)] gap-3 bg-[#29352f] p-4 text-white">
                 <div className="font-medium">Estimated Total</div>
-                <div className="text-right font-mono text-[14px] opacity-70">
+                <div className="font-mono text-[14px] opacity-70" data-testid="text-total-branded">
                   ₹{totals.branded.toLocaleString('en-IN')}
                 </div>
-                <div className="text-right font-mono text-[14px] opacity-70">
+                <div className="font-mono text-[14px] opacity-70" data-testid="text-total-local">
                   ₹{totals.local.toLocaleString('en-IN')}
                 </div>
-                <div className="text-right font-mono text-[15px] font-bold text-[#d89a48]">
+                <div className="font-mono text-[15px] font-bold text-[#d89a48]" data-testid="text-total-artisan">
                   ₹{totals.artisan.toLocaleString('en-IN')}
                 </div>
               </div>

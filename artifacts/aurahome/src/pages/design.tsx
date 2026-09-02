@@ -23,18 +23,74 @@ import {
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import {
-  analyzeRoomDemo,
-  generateDesignDemo,
-  type AnalysisStage,
   type DesignGenerationRequest,
   type DesignGenerationResult,
   type FurniturePiece,
 } from '@/lib/designDemoService';
 import { handleImageError } from '@/lib/imageFallback';
+import {
+  checkVastu,
+  createDesignArchetype,
+  detectRoomContext,
+  generateRoomDesign,
+  type DesignArchetype,
+  type DetectedContext,
+  type VastuInsight,
+} from '@/lib/auraApi';
+import { ARFurniturePreview } from '@/components/design/ARFurniturePreview';
+import { getSourcingCatalog, type RoomSize, type SourcingTier } from '@/data/sourcing';
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 const BUDGET_BANDS = ['₹50k–1L', '₹1L–3L', '₹3L–7L', '₹7L+'] as const;
-const FURNITURE_PIECES: FurniturePiece[] = ['sofa', 'bed', 'dining table', 'wardrobe', 'armchair'];
+const FURNITURE_PIECES: FurniturePiece[] = ['sofa', 'bed', 'dining table', 'wardrobe', 'armchair', 'accessories'];
+
+interface AnalysisBundle {
+  context: DetectedContext;
+  archetype: DesignArchetype;
+  vastu: VastuInsight[];
+}
+
+const quizAnswers = (request: DesignGenerationRequest) => [
+  { questionId: 'age', answer: request.age },
+  { questionId: 'city', answer: request.city },
+  { questionId: 'style', styleId: request.styleId === 'skipped' ? 'vastu-modern' : request.styleId },
+  { questionId: 'ownership', answer: request.ownership },
+  { questionId: 'household', answer: request.household },
+  { questionId: 'budget', answer: request.budgetBand },
+  { questionId: 'taste-vector', tasteVector: request.dnaVector },
+];
+
+function compileDesignPrompt(
+  request: DesignGenerationRequest,
+  analysis: AnalysisBundle,
+) {
+  const activeStyle = regionalStyles.find((style) => style.id === request.styleId)
+    ?? regionalStyles.find((style) => style.id === 'vastu-modern')
+    ?? regionalStyles[0];
+  const vastuCorrections = analysis.vastu
+    .filter((insight) => insight.applies)
+    .map((insight) => insight.correctionInstruction)
+    .join(' ');
+  const scope = request.scope === 'piece'
+    ? `Change only the ${request.piece}; keep all other existing furniture and decor unchanged.`
+    : 'Redesign the complete room while keeping its real architecture intact.';
+
+  return [
+    `Create a photorealistic ${activeStyle.name} redesign of this exact ${analysis.context.roomType}.`,
+    `Style direction: ${activeStyle.caption}`,
+    `Resident persona: ${analysis.archetype.archetype}. ${analysis.archetype.tagline}`,
+    request.ownership === 'rent'
+      ? 'This is a rented home: use removable, no-drill, non-structural changes only.'
+      : 'This is an owned home: permanent finishes and fitted elements are allowed.',
+    `Household needs: ${request.household.join(', ') || 'not specified'}.`,
+    `Budget band: ${request.budgetBand}.`,
+    scope,
+    vastuCorrections ? `Respect these practical Vastu corrections: ${vastuCorrections}` : '',
+    `Palette: ${analysis.archetype.primaryColor}, ${analysis.archetype.secondaryColor}, and ${analysis.archetype.accentColor}.`,
+    `Style cues: ${analysis.archetype.styleKeywords.join(', ')}.`,
+    'Preserve all existing walls, windows, doors, openings, ceiling geometry, floor boundaries, camera perspective, and natural-light direction.',
+  ].filter(Boolean).join('\n');
+}
 
 // --- STEP COMPONENTS ---
 
@@ -272,14 +328,14 @@ function Step6Budget({ budget, setBudget, nextStep }: any) {
 function Step7DNA({ nextStep, dnaVector, setDnaVector }: any) {
   const [pairIndex, setPairIndex] = useState(0);
   const pairs = [
-    { a: 'photo-1617104611622-d5f245d317f0', b: 'photo-1600566753086-00f18fb6b3ea', axis: 0, aAlt: 'Ornate classic room', bAlt: 'Clean minimal room' },
-    { a: 'photo-1616046229478-9901c5536a45', b: 'photo-1600210491892-03d54c0aaf87', axis: 1, aAlt: 'Bold colourful interior', bAlt: 'Muted neutral interior' },
+    { a: 'photo-1618221195710-dd6b41faaea6', b: 'photo-1600566753086-00f18fb6b3ea', axis: 0, aAlt: 'Ornate classic room', bAlt: 'Clean minimal room' },
+    { a: 'photo-1618220179428-22790b461013', b: 'photo-1616486338812-3dadae4b4ace', axis: 1, aAlt: 'Bold colourful interior', bAlt: 'Muted neutral interior' },
     { a: 'photo-1615874959474-d609969a20ed', b: 'photo-1600607687939-ce8a6c25118c', axis: 2, aAlt: 'Warm textured wood room', bAlt: 'Cool minimal room' },
-    { a: 'photo-1618221195710-dd6b41faaea6', b: 'photo-1600566753051-f0b89df2dd90', axis: 3, aAlt: 'Dense layered room', bAlt: 'Spacious airy room' },
+    { a: 'photo-1616047006789-b7af5afb8c20', b: 'photo-1600210491892-03d54c0aaf87', axis: 3, aAlt: 'Dense layered room', bAlt: 'Spacious airy room' },
     { a: 'photo-1600121848594-d8644e57abab', b: 'photo-1600585154340-be6161a56a0c', axis: 4, aAlt: 'Traditional heritage home', bAlt: 'Contemporary apartment' },
     { a: 'photo-1616486338812-3dadae4b4ace', b: 'photo-1600573472550-8090b5e0745e', axis: 1, aAlt: 'Dark dramatic bedroom', bAlt: 'Bright sunlit bedroom' },
-    { a: 'photo-1615529328331-f8917597711f', b: 'photo-1600566753190-17f0baa2a6c3', axis: 0, aAlt: 'Patterned maximalist room', bAlt: 'Quiet solid-colour room' },
-    { a: 'photo-1600607687920-4e2a09cf159d', b: 'photo-1618219908412-a29a1bb7b86e', axis: 2, aAlt: 'Raw industrial loft', bAlt: 'Polished elegant room' },
+    { a: 'photo-1616046229478-9901c5536a45', b: 'photo-1600566753190-17f0baa2a6c3', axis: 0, aAlt: 'Patterned maximalist room', bAlt: 'Quiet solid-colour room' },
+    { a: 'photo-1600573472591-ee6b68d14c68', b: 'photo-1618219908412-a29a1bb7b86e', axis: 2, aAlt: 'Raw industrial loft', bAlt: 'Polished elegant room' },
   ];
   const dnaImage = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=82`;
   const totalPairs = pairs.length;
@@ -397,35 +453,50 @@ function Step8Upload({ roomImage, setRoomImage, nextStep }: any) {
   );
 }
 
-function Step9Analyzing({ nextStep }: any) {
-  const [stage, setStage] = useState<AnalysisStage>('layout');
+function Step9Analyzing({
+  request,
+  onComplete,
+}: {
+  request: DesignGenerationRequest;
+  onComplete: (analysis: AnalysisBundle) => void;
+}) {
+  const [stage, setStage] = useState<'layout' | 'vastu' | 'archetype'>('layout');
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
     setError('');
+    setStage('layout');
 
-    analyzeRoomDemo({
-      signal: controller.signal,
-      onStage: setStage,
-      simulateFailure:
-        new URLSearchParams(window.location.search).has('analysisError') &&
-        attempt === 0,
-    })
-      .then(nextStep)
-      .catch(cause => {
+    const runAnalysis = async () => {
+      const archetypePromise = createDesignArchetype(quizAnswers(request), controller.signal);
+      const context = await detectRoomContext(request.roomImage, controller.signal);
+      setStage('vastu');
+      const vastu = await checkVastu({
+        roomType: context.roomType,
+        orientation: context.estimatedOrientation,
+        furnitureList: request.scope === 'piece'
+          ? [request.piece]
+          : ['bed', 'mirror', 'entrance', 'stove', 'pooja corner'],
+      }, controller.signal);
+      setStage('archetype');
+      const archetype = await archetypePromise;
+      onComplete({ context, archetype, vastu });
+    };
+
+    void runAnalysis().catch(cause => {
         if (cause instanceof DOMException && cause.name === 'AbortError') return;
         setError(cause instanceof Error ? cause.message : 'Room analysis failed.');
       });
 
     return () => controller.abort();
-  }, [attempt, nextStep]);
+  }, [attempt, onComplete, request]);
 
-  const messages: Record<AnalysisStage, string> = {
-    layout: 'Detecting room layout and lighting…',
+  const messages = {
+    layout: 'Claude is detecting the room type and orientation…',
     vastu: 'Checking practical Vastu considerations…',
-    archetype: 'Compiling your style archetype…',
+    archetype: 'Compiling your personal style archetype…',
   };
 
   return (
@@ -465,15 +536,21 @@ function Step10Confirm({
   setMode,
   piece,
   setPiece,
+  analysis,
 }: any) {
   const activeStyle = regionalStyles.find(s => s.id === styleId) || regionalStyles[0];
-  
-  const initialVastuChips = [
-    { id: 'v1', title: 'South-East Facing', detail: 'We\'ll balance this fire element with earth tones and heavier elements to ground the energy.' },
-    { id: 'v2', title: 'Window placement', detail: 'Light flow is good; we will avoid blocking the north-east window with heavy furniture.' }
-  ];
-  const [vastuChips, setVastuChips] = useState(initialVastuChips);
+  const toVastuChips = (bundle: AnalysisBundle) => bundle.vastu.map((insight, index) => ({
+    id: `vastu-${index}`,
+    title: insight.rule,
+    detail: `${insight.correctionInstruction} ${insight.plainLanguageWhy}`,
+    applies: insight.applies,
+  }));
+  const [vastuChips, setVastuChips] = useState(() => toVastuChips(analysis));
   const [expandedChip, setExpandedChip] = useState<string | null>(null);
+
+  useEffect(() => {
+    setVastuChips(toVastuChips(analysis));
+  }, [analysis]);
 
   const isSkipped = styleId === 'skipped';
 
@@ -485,15 +562,15 @@ function Step10Confirm({
           
           <div className="absolute bottom-6 left-6 right-6 rounded-xl bg-white/95 p-5 shadow-2xl backdrop-blur-md">
             <div className="eyebrow mb-2 text-[#b8573b]">Your Persona</div>
-            <h3 className="display text-2xl mb-1">The Grounded Collector</h3>
-            <p className="text-[12px] text-[#68766d] mb-4">You prefer spaces that feel layered, warm, and intentional rather than purely stark.</p>
+            <h3 className="display text-2xl mb-1">{analysis.archetype.archetype}</h3>
+            <p className="text-[12px] text-[#68766d] mb-4">{analysis.archetype.tagline}</p>
             <div className="flex gap-2 mb-3">
-              {['#b85c38', '#d5a464', '#1f5c57'].map(c => <span key={c} className="size-6 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: c }} />)}
+              {[analysis.archetype.primaryColor, analysis.archetype.secondaryColor, analysis.archetype.accentColor].map(c => <span key={c} className="size-6 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: c }} />)}
             </div>
             <div className="flex flex-wrap gap-2 text-[10px] font-medium uppercase tracking-wider text-[#b8573b]">
-              <span className="rounded-full bg-[#b8573b]/10 px-2 py-1">Tactile</span>
-              <span className="rounded-full bg-[#b8573b]/10 px-2 py-1">Heritage</span>
-              <span className="rounded-full bg-[#b8573b]/10 px-2 py-1">Warm</span>
+              {analysis.archetype.styleKeywords.map((keyword: string) => (
+                <span key={keyword} className="rounded-full bg-[#b8573b]/10 px-2 py-1">{keyword}</span>
+              ))}
             </div>
           </div>
         </div>
@@ -532,7 +609,7 @@ function Step10Confirm({
                     <motion.div 
                       key={chip.id} 
                       initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                      className="rounded-xl border border-[#1f5c57]/20 bg-[#1f5c57]/5 p-3 overflow-hidden"
+                       className={`rounded-xl border p-3 overflow-hidden ${chip.applies ? 'border-[#1f5c57]/20 bg-[#1f5c57]/5' : 'border-[#d7cbbb] bg-white/45 opacity-75'}`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <button
@@ -542,7 +619,7 @@ function Step10Confirm({
                           className="flex flex-1 items-center gap-2 text-left"
                         >
                           <Compass className="text-[#1f5c57]" size={16} />
-                          <span className="text-[14px] font-medium text-[#1f5c57]">{chip.title}</span>
+                           <span className="text-[14px] font-medium text-[#1f5c57]">{chip.title}{!chip.applies ? ' · not detected' : ''}</span>
                         </button>
                         <button
                           type="button"
@@ -600,58 +677,76 @@ function Step10Confirm({
 
 function Step11Generating({
   request,
+  analysis,
   onComplete,
 }: {
   request: DesignGenerationRequest;
+  analysis: AnalysisBundle;
   onComplete: (result: DesignGenerationResult) => void;
 }) {
   const [status, setStatus] = useState<'loading' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
   const [attempt, setAttempt] = useState(0);
-  const styleName = regionalStyles.find(s => s.id === request.styleId)?.name || 'style';
+  const [messageIndex, setMessageIndex] = useState(0);
+  const messages = ['Analyzing your space…', 'Applying your style…', 'Balancing materials and light…', 'Finalizing details…'];
 
   useEffect(() => {
     const controller = new AbortController();
     setStatus('loading');
+    setErrorMessage('');
+    setMessageIndex(0);
+    const timer = window.setInterval(() => {
+      setMessageIndex((index) => (index + 1) % messages.length);
+    }, 7000);
 
-    generateDesignDemo({
-      request,
-      signal: controller.signal,
-      simulateFailure:
-        new URLSearchParams(window.location.search).has('demoError') &&
-        attempt === 0,
-    })
-      .then(onComplete)
+    generateRoomDesign(request.roomImage, compileDesignPrompt(request, analysis), controller.signal)
+      .then(({ imageDataUrl }) => onComplete({
+        designId: `design-${Date.now()}`,
+        request,
+        persona: analysis.archetype.archetype,
+        summary: `${analysis.archetype.tagline}. ${analysis.archetype.signatureTip}`,
+        imageDataUrl,
+      }))
       .catch(cause => {
         if (cause instanceof DOMException && cause.name === 'AbortError') return;
         setStatus('error');
+        setErrorMessage(cause instanceof Error ? cause.message : 'The design could not be generated.');
       });
 
-    return () => controller.abort();
-  }, [attempt, onComplete, request]);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+    };
+  }, [analysis, attempt, onComplete, request]);
 
   return (
     <div className="mx-auto max-w-xl text-center py-20">
       {status === 'loading' ? (
-        <>
-          <div className="relative mx-auto mb-10 size-24">
-            <div className="absolute inset-0 rounded-full border-2 border-[#d7cbbb]" />
-            <div className="absolute inset-0 rounded-full border-2 border-[#b8573b] border-t-transparent animate-spin" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-2 rounded-full border-2 border-[#d89a48] border-b-transparent animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-            <Sparkles className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[#b8573b]" size={24} />
+        <div className="mx-auto max-w-lg">
+          <div className="relative mb-8 aspect-[4/3] overflow-hidden rounded-2xl border border-[#d7cbbb] bg-[#ddd0bf] shadow-xl">
+            <img src={request.roomImage} alt="Your room while the redesign is generated" className="h-full w-full object-cover opacity-45 blur-[1px]" />
+            <div className="generation-shimmer absolute inset-0" />
+            <div className="absolute inset-0 grid place-items-center bg-[#29352f]/20">
+              <div className="grid size-20 place-items-center rounded-full border border-white/40 bg-[#29352f]/75 text-white backdrop-blur">
+                <Sparkles className="animate-pulse" size={26} />
+              </div>
+            </div>
           </div>
-          <h2 className="display text-3xl mb-4">Rendering your new room...</h2>
-          <div className="h-2 w-64 mx-auto rounded-full bg-[#d7cbbb] overflow-hidden">
-            <div className="h-full bg-[#b8573b] animate-[progress_4s_ease-in-out_forwards]" />
-          </div>
-          <p className="mt-4 text-[13px] text-[#68766d]">Applying {styleName} elements...</p>
-        </>
+          <h2 className="display text-3xl mb-3">Creating your real redesign</h2>
+          <AnimatePresence mode="wait">
+            <motion.p key={messageIndex} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="text-[14px] text-[#68766d]">
+              {messages[messageIndex]}
+            </motion.p>
+          </AnimatePresence>
+          <p className="mt-3 text-[11px] text-[#68766d]/75">Image edits can take about a minute. Keep this page open.</p>
+        </div>
       ) : (
         <div className="animate-in zoom-in-95">
           <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-red-100 text-red-600">
             <AlertTriangle size={32} />
           </div>
           <h2 className="display text-3xl mb-4">Generation interrupted</h2>
-          <p className="mb-8 text-[14px] text-[#68766d]">The AI service timed out while assembling your textures. Please try again.</p>
+          <p role="alert" className="mb-8 text-[14px] text-[#68766d]">{errorMessage}</p>
           <button 
              onClick={() => setAttempt(value => value + 1)}
             className="inline-flex items-center gap-2 rounded-full bg-[#29352f] px-6 py-3 text-[14px] font-medium text-white transition-transform hover:-translate-y-0.5"
@@ -923,140 +1018,121 @@ function ARPanorama({ styleName }: { styleName: string }) {
 
 function Step12Result({
   styleId,
-  roomImage,
   result,
+  analysis,
   jumpToStep,
 }: {
   styleId: string;
   roomImage: string | null;
   result: DesignGenerationResult | null;
+  analysis: AnalysisBundle;
   jumpToStep: (step: Step) => void;
 }) {
   const activeStyle = regionalStyles.find(s => s.id === styleId) || regionalStyles[0];
   const { toast } = useToast();
-  
   const [arMode, setArMode] = useState(false);
-  const [tier, setTier] = useState<'branded'|'local'|'artisan'>('artisan');
+  const [tier, setTier] = useState<SourcingTier>('artisan');
+  const [roomSize, setRoomSize] = useState<RoomSize>('medium');
+  const sourcingItems = getSourcingCatalog(
+    roomSize,
+    result?.request.city || 'Delhi',
+    analysis.context.roomType,
+    activeStyle.name,
+  );
 
   const handleSave = () => {
-    const savedDesign = {
-      designId: result?.designId ?? 'demo-concept',
+    if (!result) return;
+    window.localStorage.setItem('aurahomes-design', JSON.stringify({
+      designId: result.designId,
       styleId,
-      summary: result?.summary ?? `A ${activeStyle.name} demo concept.`,
-    };
-    window.localStorage.setItem('aurahomes-demo-design', JSON.stringify(savedDesign));
-    toast({
-      title: 'Design plan saved',
-      description: 'This demo plan is saved on this device.',
-    });
+      summary: result.summary,
+    }));
+    toast({ title: 'Design plan saved', description: 'Your generated design plan is saved on this device.' });
   };
-
-  const items = {
-    branded: [
-      { name: 'Teak Console', desc: 'Premium Retailer', price: '₹85,000' },
-      { name: 'Terracotta Lamp', desc: 'Designer Collection', price: '₹12,500' }
-    ],
-    local: [
-      { name: 'Teak Console', desc: 'City Furniture Market', price: '₹42,000' },
-      { name: 'Terracotta Lamp', desc: 'Local Home Store', price: '₹4,500' }
-    ],
-    artisan: [
-      { name: 'Teak Console', desc: 'Handcrafted by regional woodworker', price: '₹55,000' },
-      { name: 'Terracotta Lamp', desc: 'Sourced from potters cluster', price: '₹3,200' }
-    ]
-  };
-
-  const currentItems = items[tier];
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col items-start gap-8 md:flex-row">
         <div className="w-full md:w-2/3">
-          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border-4 border-white shadow-2xl">
-            {arMode ? (
-               <ARPanorama styleName={activeStyle.name} />
-            ) : (
-              <div className="relative h-full w-full bg-[#29352f]">
-                <img
-                  src={roomImage || getImageUrl(activeStyle.imageSearchTerm)}
-                  alt="Your room used as the base for this demo concept"
-                   onError={handleImageError}
-                  className="h-full w-full object-cover"
-                />
-                {roomImage && (
-                  <img
-                    src={getImageUrl(activeStyle.imageSearchTerm)}
-                    alt=""
-                     onError={handleImageError}
-                    className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-multiply"
-                  />
-                )}
-                <div className="absolute bottom-4 right-4 rounded-full bg-[#f3ecdf]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#29352f] backdrop-blur">
-                  Demo concept preview
-                </div>
-              </div>
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border-4 border-white bg-[#29352f] shadow-2xl">
+            <img
+              src={result?.imageDataUrl}
+              alt={`${activeStyle.name} AI-generated room redesign`}
+              onError={handleImageError}
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute bottom-4 right-4 rounded-full bg-[#f3ecdf]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#29352f] backdrop-blur">
+              AI-generated redesign
+            </div>
+            {result?.request.scope === 'piece' && (
+              <button
+                onClick={() => setArMode(true)}
+                className="absolute left-4 top-4 z-10 rounded-full bg-black/60 px-4 py-1.5 text-[12px] font-medium text-white backdrop-blur-md transition-colors hover:bg-black"
+              >
+                AR Preview
+              </button>
             )}
-            <button 
-              onClick={() => setArMode(!arMode)}
-              className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-[12px] font-medium text-white backdrop-blur-md hover:bg-black transition-colors z-10"
-            >
-              {arMode ? 'Exit AR View' : 'Try AR View'}
-            </button>
           </div>
-          
-          <div className="mt-8 flex items-center justify-between border-b border-[#d7cbbb] pb-4">
-            <h3 className="display text-2xl">Sourcing & Budget</h3>
-            <div className="flex gap-2">
-              {(['artisan', 'local', 'branded'] as const).map(t => (
-                <button 
-                  key={t} onClick={() => setTier(t)}
-                  className={`rounded-full px-4 py-1.5 text-[12px] font-medium capitalize transition-colors ${tier === t ? 'bg-[#29352f] text-white' : 'border border-[#d7cbbb] text-[#536059] hover:bg-white'}`}
-                >
-                  {t}
+
+          <div className="mt-8 border-b border-[#d7cbbb] pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h3 className="display text-2xl">Sourcing & Budget</h3>
+              <div className="flex flex-wrap gap-2">
+                {(['small', 'medium', 'large'] as RoomSize[]).map(size => (
+                  <button key={size} onClick={() => setRoomSize(size)} className={`rounded-full px-3 py-1.5 text-[11px] font-medium capitalize ${roomSize === size ? 'bg-[#b8573b] text-white' : 'border border-[#d7cbbb] text-[#536059]'}`}>
+                    {size} · {size === 'small' ? '~100' : size === 'medium' ? '~150' : '~250+'} sq ft
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(['artisan', 'local', 'branded'] as SourcingTier[]).map(option => (
+                <button key={option} onClick={() => setTier(option)} className={`rounded-full px-4 py-1.5 text-[12px] font-medium capitalize ${tier === option ? 'bg-[#29352f] text-white' : 'border border-[#d7cbbb] text-[#536059] hover:bg-white'}`}>
+                  {option}
                 </button>
               ))}
             </div>
           </div>
-          
-          <div className="mt-6 grid gap-4">
-            <AnimatePresence mode="wait">
-              <motion.div key={tier} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid gap-4">
-                {currentItems.map(item => (
-                  <div key={item.name} className="flex items-center justify-between rounded-xl bg-white/60 p-4 shadow-sm">
+
+          <AnimatePresence mode="wait">
+            <motion.div key={`${tier}-${roomSize}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mt-6 grid gap-4">
+              {sourcingItems.map(item => {
+                const option = item.tiers[tier];
+                return (
+                  <div key={item.id} className="grid gap-3 rounded-xl bg-white/60 p-4 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center">
                     <div>
-                      <div className="font-medium text-[#29352f]">{item.name}</div>
-                      <div className="text-[13px] text-[#68766d]">{item.desc}</div>
+                      <div className="font-medium text-[#29352f]">{item.name} <span className="text-[#68766d]">×{item.quantity}</span></div>
+                      <div className="mt-1 text-[12px] leading-relaxed text-[#68766d]">{option.detail}</div>
+                      {option.link ? (
+                        <a href={option.link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[11px] font-semibold text-[#1f5c57] underline underline-offset-4">{option.supplier}</a>
+                      ) : (
+                        <div className="mt-2 text-[11px] font-semibold text-[#1f5c57]">{option.supplier}</div>
+                      )}
                     </div>
-                    <div className="font-mono text-[15px] font-bold text-[#b8573b]">{item.price}</div>
+                    <div className="font-mono text-[15px] font-bold text-[#b8573b]">₹{(option.basePrice * item.quantity).toLocaleString('en-IN')}</div>
                   </div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
         </div>
-        
-        <div className="w-full md:w-1/3 rounded-2xl border border-[#d7cbbb] bg-[#f8f0e5] p-6">
-          <h4 className="display text-xl mb-4">Design Notes</h4>
-          <p className="text-[14px] leading-relaxed text-[#536059] mb-6">
-            {result?.summary ?? `This demo concept applies the ${activeStyle.name} direction to your room.`}
-          </p>
+
+        <div className="w-full rounded-2xl border border-[#d7cbbb] bg-[#f8f0e5] p-6 md:w-1/3">
+          <div className="eyebrow mb-2 text-[#b8573b]">{analysis.context.roomType}</div>
+          <h4 className="display mb-4 text-xl">{analysis.archetype.archetype}</h4>
+          <p className="mb-5 text-[14px] leading-relaxed text-[#536059]">{result?.summary}</p>
           <p className="mb-6 rounded-lg bg-[#d89a48]/10 p-3 text-[12px] leading-relaxed text-[#536059]">
-            This is an interactive frontend demo, not a photorealistic AI render. Connect the generation adapter to a production image model to create the final redesign.
+            This image was generated from your uploaded room while preserving its existing architecture and perspective.
           </p>
-          
           <div className="grid gap-3">
-            <button 
-               onClick={handleSave}
-              className="flex items-center justify-center gap-2 rounded-xl bg-[#c8a97e] px-4 py-3 text-[14px] font-semibold text-[#29352f] transition-transform hover:-translate-y-0.5"
-            >
-              Save Design Plan
-            </button>
-             <button onClick={() => jumpToStep(3)} className="flex items-center justify-center gap-2 rounded-xl border border-[#d7cbbb] bg-white px-4 py-3 text-[14px] font-medium text-[#29352f] transition-colors hover:border-[#29352f]">
-              <RefreshCw size={16} /> Try another style
-            </button>
+            <button onClick={handleSave} className="rounded-xl bg-[#c8a97e] px-4 py-3 text-[14px] font-semibold text-[#29352f]">Save Design Plan</button>
+            <button onClick={() => jumpToStep(3)} className="flex items-center justify-center gap-2 rounded-xl border border-[#d7cbbb] bg-white px-4 py-3 text-[14px] font-medium text-[#29352f]"><RefreshCw size={16} /> Try another style</button>
           </div>
         </div>
       </div>
+      {arMode && result?.request.scope === 'piece' && (
+        <ARFurniturePreview piece={result.request.piece} onClose={() => setArMode(false)} />
+      )}
     </div>
   );
 }
@@ -1080,6 +1156,7 @@ export default function DesignFlow() {
   const [designScope, setDesignScope] = useState<'whole' | 'piece'>('whole');
   const [furniturePiece, setFurniturePiece] = useState<FurniturePiece>('sofa');
   const [designResult, setDesignResult] = useState<DesignGenerationResult | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisBundle | null>(null);
 
   const generationRequest = useMemo<DesignGenerationRequest>(() => ({
     age,
@@ -1131,6 +1208,12 @@ export default function DesignFlow() {
     setDesignResult(result);
     setDirection(1);
     setStep(12);
+  }, []);
+
+  const handleAnalysisComplete = useCallback((nextAnalysis: AnalysisBundle) => {
+    setAnalysis(nextAnalysis);
+    setDirection(1);
+    setStep(10);
   }, []);
 
   const slideVariants = {
@@ -1203,8 +1286,8 @@ export default function DesignFlow() {
               {step === 6 && <Step6Budget budget={budget} setBudget={setBudget} nextStep={nextStep} />}
               {step === 7 && <Step7DNA dnaVector={dnaVector} setDnaVector={setDnaVector} nextStep={nextStep} />}
               {step === 8 && <Step8Upload roomImage={roomImage} setRoomImage={setRoomImage} nextStep={nextStep} />}
-              {step === 9 && <Step9Analyzing nextStep={nextStep} />}
-              {step === 10 && (
+              {step === 9 && <Step9Analyzing request={generationRequest} onComplete={handleAnalysisComplete} />}
+              {step === 10 && analysis && (
                 <Step10Confirm
                   styleId={styleId}
                   setStyleId={setStyleId}
@@ -1215,19 +1298,22 @@ export default function DesignFlow() {
                   setMode={setDesignScope}
                   piece={furniturePiece}
                   setPiece={setFurniturePiece}
+                  analysis={analysis}
                 />
               )}
-              {step === 11 && (
+              {step === 11 && analysis && (
                 <Step11Generating
                   request={generationRequest}
+                  analysis={analysis}
                   onComplete={handleGenerationComplete}
                 />
               )}
-              {step === 12 && (
+              {step === 12 && analysis && (
                 <Step12Result
                   styleId={styleId}
                   roomImage={roomImage}
                   result={designResult}
+                  analysis={analysis}
                   jumpToStep={jumpToStep}
                 />
               )}

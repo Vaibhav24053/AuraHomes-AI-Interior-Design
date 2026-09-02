@@ -1,5 +1,5 @@
 export type AnalysisStage = 'layout' | 'vastu' | 'archetype';
-export type FurniturePiece = 'sofa' | 'bed' | 'dining table' | 'wardrobe' | 'armchair';
+export type FurniturePiece = 'sofa' | 'bed' | 'dining table' | 'wardrobe' | 'armchair' | 'accessories';
 
 export interface DesignGenerationRequest {
   age: string;
@@ -19,6 +19,7 @@ export interface DesignGenerationResult {
   request: DesignGenerationRequest;
   persona: string;
   summary: string;
+  imageDataUrl?: string;
 }
 
 export class DemoServiceError extends Error {
