@@ -238,6 +238,22 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-link::after { content: ''; position: absolute; left: 0; right: 100%; bottom: -5px; height: 1px; background: currentColor; transition: right .25s ease; }
 .nav-link:hover::after { right: 0; }
 
+@media (min-width: 768px) and (max-width: 899px) {
+  .hero-title {
+    font-size: clamp(4rem, 9.6vw, 6rem);
+    line-height: .84;
+    letter-spacing: -.07em;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1279px) {
+  .hero-title {
+    font-size: clamp(4rem, 12.4vw, 8.5rem);
+    line-height: .84;
+    letter-spacing: -.07em;
+  }
+}
+
 .toolkit-card { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; }
 .toolkit-card:hover { transform: translateY(-7px); box-shadow: 0 20px 44px rgba(69,48,30,.13); }
 .uniform-card-grid > * { height: 100%; }

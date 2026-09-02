@@ -11,8 +11,8 @@ function Hero() {
     <section className="hero-aurora relative min-h-[760px] px-5 pb-20 pt-36 sm:px-10 sm:pt-44 lg:min-h-[820px] lg:px-20">
       <div className="pointer-events-none absolute -left-32 top-40 size-72 rounded-full bg-[#d89a48]/10 blur-3xl" />
       <div className="pointer-events-none absolute right-[-8%] top-12 size-96 rounded-full border border-[#b8573b]/10" />
-      <div className="mx-auto grid max-w-[1240px] items-center gap-14 lg:grid-cols-[.93fr_1.07fr] lg:gap-20">
-        <div className="relative z-10 max-w-[590px]">
+      <div className="mx-auto grid max-w-[1240px] items-center gap-14 xl:grid-cols-[.93fr_1.07fr] xl:gap-20">
+        <div className="relative z-10 max-w-none xl:max-w-[590px]">
           <Reveal>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#b8573b]/30 bg-[#f8f0e5]/70 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[.14em] text-[#b8573b]">
               <Sparkles size={12} /> AI-Powered Interior Design
@@ -47,7 +47,7 @@ function Hero() {
              <span className="text-[12px] opacity-80">2,400+ Indian homes transformed this month</span>
           </div>
         </div>
-        <Reveal className="relative" delay="reveal-delay-2">
+        <Reveal className="relative xl:mt-0" delay="reveal-delay-2">
           <div className="relative mx-auto max-w-[570px]">
             <div className="absolute -left-8 top-8 h-[88%] w-16 rounded-[50%] bg-[#d89a48]/25 blur-2xl sm:-left-14" />
             <div className="image-zoom relative aspect-[.82] overflow-hidden rounded-[13rem_13rem_1rem_1rem] border-[10px] border-[#e3d6c6] shadow-[0_35px_70px_rgba(77,51,31,.18)] sm:aspect-[.9]">
