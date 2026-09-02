@@ -39,6 +39,7 @@ import {
 } from '@/lib/auraApi';
 import { ARFurniturePreview } from '@/components/design/ARFurniturePreview';
 import { getSourcingCatalog, type RoomSize, type SourcingTier } from '@/data/sourcing';
+import { BrandLogo } from '@/components/BrandLogo';
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 const BUDGET_BANDS = ['₹50k–1L', '₹1L–3L', '₹3L–7L', '₹7L+'] as const;
@@ -1238,8 +1239,8 @@ export default function DesignFlow() {
       <div className="mx-auto max-w-[1240px]">
         {/* Header / Nav */}
         <div className="mb-12 flex items-center justify-between">
-          <Link href="/" className="text-[20px] tracking-[-.04em] font-serif display">
-            aura<span className="text-[#b8573b]">/</span>homes
+          <Link href="/" className="inline-flex" aria-label="AuraHomes home">
+            <BrandLogo size="flow" />
           </Link>
           
           <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-4">

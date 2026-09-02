@@ -19,8 +19,9 @@ function Hero() {
             </div>
           </Reveal>
           <Reveal delay="reveal-delay-1">
-            <h1 className="display type-h1 text-[#29352f]">
-              Your Dream Home,<br /><span className="text-gradient">Designed by AI.</span>
+            <h1 className="display hero-title text-[#29352f]">
+              <span className="hero-title-line">Your Dream Home,</span>
+              <span className="hero-title-line text-gradient">Designed by <span className="hero-ai text-gradient">AI.</span></span>
             </h1>
           </Reveal>
           <Reveal delay="reveal-delay-2">

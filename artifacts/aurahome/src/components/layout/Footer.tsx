@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { BrandLogo } from '@/components/BrandLogo';
 
 export function Footer() {
   return (
@@ -6,8 +7,8 @@ export function Footer() {
       <div className="mx-auto max-w-[1240px]">
         <div className="grid gap-12 border-b border-[#d7cbbb] pb-16 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
           <div>
-            <Link href="/" className="display text-[35px] tracking-[-.04em]" data-testid="link-footer-logo">
-              aura<span className="text-[#b8573b]">/</span>homes
+            <Link href="/" className="inline-flex" data-testid="link-footer-logo">
+              <BrandLogo size="footer" />
             </Link>
             <p className="mt-5 max-w-[245px] text-[14px] leading-6 text-[#29352f] opacity-80">
               Interior design, interpreted for the way we live here.

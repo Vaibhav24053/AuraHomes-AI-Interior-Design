@@ -183,6 +183,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .type-h1 { font-size: var(--type-h1); line-height: .84; letter-spacing: -.06em; }
 .type-h2 { font-size: var(--type-h2); line-height: .9; letter-spacing: -.05em; }
 .type-h3 { font-size: var(--type-h3); line-height: 1; }
+.hero-title { font-size: clamp(3rem, 8vw, 8.5rem); line-height: .9; letter-spacing: -.06em; }
+.hero-title-line { display: block; white-space: nowrap; }
+.hero-ai { display: inline-block; margin-left: .08em; letter-spacing: -.045em; transform: translateY(.015em); }
 .type-body { font-size: var(--type-body); line-height: 1.8; }
 .type-small { font-size: var(--type-small); line-height: 1.5; }
 .text-gradient { background: linear-gradient(100deg, #b8573b 0%, #d89a48 48%, #8b6b2e 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
