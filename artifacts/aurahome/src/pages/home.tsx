@@ -507,7 +507,7 @@ function FinalCta() {
 
 export default function Home() {
   return (
-    <main className="aura-shell grain overflow-hidden bg-[#f3ecdf] text-[#29352f]">
+    <main className="aura-shell grain overflow-x-hidden bg-[#f3ecdf] text-[#29352f]">
       <Hero />
       <Marquee />
       <RegionalStyles />
