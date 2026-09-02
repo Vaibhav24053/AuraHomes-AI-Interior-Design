@@ -1,4 +1,4 @@
-import logoAsset from '../../../../attached_assets/image_1788350965701.png';
+import logoAsset from '../../../../attached_assets/aurahomes-logo-transparent.png';
 import { handleImageError } from '@/lib/imageFallback';
 
 export function BrandLogo({
@@ -19,7 +19,7 @@ export function BrandLogo({
       src={logoAsset}
       alt="AuraHomes"
       onError={handleImageError}
-      className={`${dimensions} object-contain mix-blend-multiply ${className}`}
+      className={`${dimensions} object-contain ${className}`}
     />
   );
 }
