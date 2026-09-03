@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Sparkles, ArrowRight, ArrowDownRight, ArrowUpRight, Compass, MoveHorizontal, Palette, House, IndianRupee } from 'lucide-react';
 import { Reveal } from '@/components/ui/reveal';
-import { regionalStyles, getImageUrl } from '@/data/regionalStyles';
+import { regionalStyles } from '@/data/regionalStyles';
 import { handleImageError } from '@/lib/imageFallback';
 
 function Hero() {
@@ -135,7 +135,7 @@ function StyleAccordion({ items }: { items: typeof regionalStyles }) {
           <motion.img
             key={activeItem.id}
             data-testid="regional-accordion-image"
-            src={getImageUrl(activeItem.imageSearchTerm)}
+              src={activeItem.imageUrl}
             alt={activeItem.name}
               onError={handleImageError}
             className="regional-image-enter absolute inset-0 h-full w-full object-cover"

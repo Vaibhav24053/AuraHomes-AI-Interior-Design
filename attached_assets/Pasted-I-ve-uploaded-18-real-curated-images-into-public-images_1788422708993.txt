@@ -1,0 +1,32 @@
+I've uploaded 18 real curated images into public/images/regional-styles/. Replace the Unsplash search-term image sourcing in src/data/regionalStyles.ts entirely with these local images — stop using Unsplash for these 18 entries.
+
+First, rename the uploaded files (they currently have inconsistent spacing/casing/extensions) to clean kebab-case names matching each style's id, using this exact mapping:
+
+"nalakettu.jpeg" → nalukettu.jpg
+"chettinad.jpeg" → chettinad.jpg
+"rajasthani haveli.jpeg" → rajasthani-haveli.jpg
+"pol.jpeg" → pol-house.jpg
+"bondi.jpeg" → bonedi-bari.jpg
+"assamese .jpeg" → assam-type.jpg
+"punjabihaveli.jpeg" → punjabi-haveli.jpg
+"awadhi .jpg" → awadhi.jpg
+"marath wada .jpeg" → wada-style.jpg
+"nizami .jpeg" → nizami-style.jpg
+"Indo Portuguese _.jpeg" → indo-portuguese.jpg
+"kashmir.jpeg" → kashmiri-wood-style.jpg
+"genz.jpeg" → genz-minimal.jpg
+"vaastu .jpeg" → vastu-modern.jpg
+"Japandi .jpeg" → japandi.jpg
+"bohemian .jpeg" → bohemian.jpg
+"industrailloft.jpeg" → industrial-loft.jpg
+"coastal house.jpeg" → coastal-modern.jpg
+
+Then update src/data/regionalStyles.ts: replace the imageSearchTerm-based Unsplash sourcing with a new imageUrl field pointing to "/images/regional-styles/[renamed-file].jpg" for each corresponding entry (matching by the id/name — e.g., the Nalukettu entry gets "/images/regional-styles/nalukettu.jpg").
+
+Update every component that currently builds an Unsplash URL from imageSearchTerm (the regional style picker accordion, the community filter tags, the sandbox style tags, and any style-selection card in the /design flow) to use this new imageUrl field directly instead.
+
+Keep imageSearchTerm in the data file as a fallback comment/reference only — it's no longer used for rendering, but useful documentation for anyone sourcing additional images later.
+
+Do NOT touch the Design DNA swipe round's 8 image pairs (those are a separate dataset, unrelated to these 18 regional style images) — only replace sourcing for the regionalStyles.ts-driven components.
+
+After making this change, confirm every one of the 18 entries renders its correct local image with no broken image icons, and that no component still references the old Unsplash search-term pattern for these entries.

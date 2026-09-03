@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import {
   regionalStyles,
-  getImageUrl,
 } from '@/data/regionalStyles';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
@@ -187,7 +186,7 @@ function Step3Style({ city, styleId, setStyleId, nextStep }: any) {
           >
             <div className="aspect-[4/3] overflow-hidden">
               <img 
-                src={getImageUrl(style.imageSearchTerm)} 
+                src={style.imageUrl}
                 alt={style.name} 
                 onError={handleImageError}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Users, ChevronRight, Filter, Play, Hammer, Upload, RefreshCw, Sparkles, Heart, MessageCircle } from 'lucide-react';
 import { Link } from 'wouter';
-import { regionalStyles, getImageUrl } from '@/data/regionalStyles';
+import { regionalStyles } from '@/data/regionalStyles';
 import { useToast } from '@/hooks/use-toast';
 import { Reveal } from '@/components/ui/reveal';
 import { handleImageError } from '@/lib/imageFallback';
@@ -205,7 +205,7 @@ export default function CommunityPage() {
                   <div className="mt-auto rounded-xl bg-[#29352f] p-6 text-white shadow-lg">
                     <div className="eyebrow mb-2 text-[#d89a48]">{activeSandboxStyle.name} Preview</div>
                     <div className="relative mb-4 aspect-[21/9] overflow-hidden rounded-lg">
-                      <img onError={handleImageError} src={getImageUrl(activeSandboxStyle.imageSearchTerm)} alt="Preview" className="h-full w-full object-cover opacity-80" />
+                      <img onError={handleImageError} src={activeSandboxStyle.imageUrl} alt="Preview" className="h-full w-full object-cover opacity-80" />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                         <Sparkles className="text-[#d89a48]" size={32} />
                       </div>
@@ -252,7 +252,7 @@ export default function CommunityPage() {
                   <span className="absolute left-2 top-2 rounded-full bg-[#f3ecdf]/90 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider">Before</span>
                 </div>
                 <div className="relative overflow-hidden">
-                  <img onError={handleImageError} src={getImageUrl(style.imageSearchTerm)} alt={`After ${communityPeople[i][0]}'s ${style.name} room redesign`} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img onError={handleImageError} src={style.imageUrl} alt={`After ${communityPeople[i][0]}'s ${style.name} room redesign`} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <span className="absolute right-2 top-2 rounded-full bg-[#29352f]/85 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-white">After</span>
                 </div>
               </div>
