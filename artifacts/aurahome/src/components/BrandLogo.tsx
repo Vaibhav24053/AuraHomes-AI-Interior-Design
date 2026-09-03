@@ -11,7 +11,7 @@ export function BrandLogo({
   const dimensions = {
     nav: 'h-14 w-[122px] sm:h-16 sm:w-[132px]',
     footer: 'h-28 w-[185px]',
-    flow: 'h-12 w-[106px]',
+    flow: 'h-14 w-[122px] sm:h-16 sm:w-[138px]',
   }[size];
 
   return (
