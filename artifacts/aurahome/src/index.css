@@ -190,6 +190,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .type-body { font-size: var(--type-body); line-height: 1.8; }
 .type-small { font-size: var(--type-small); line-height: 1.5; }
 .text-gradient { background: linear-gradient(100deg, #b8573b 0%, #d89a48 48%, #8b6b2e 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-g { background: none; color: #cf8946; -webkit-text-fill-color: #cf8946; }
 
 /* Typography adjustments */
 .aura-shell p:not(.display) { line-height: 1.8; letter-spacing: .02em; }

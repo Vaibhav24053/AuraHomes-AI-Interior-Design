@@ -22,7 +22,7 @@ function Hero() {
             <h1 className="display hero-title text-[#29352f]">
               <span className="hero-title-line">Your Dream Home,</span>
               <span className="hero-title-line text-gradient">
-                Desi<span className="hero-descender text-gradient">g</span>ned b<span className="hero-descender text-gradient">y</span>{' '}
+                Desi<span className="hero-descender hero-g">g</span>ned b<span className="hero-descender text-gradient">y</span>{' '}
                 <span className="hero-ai text-gradient">AI.</span>
               </span>
             </h1>
