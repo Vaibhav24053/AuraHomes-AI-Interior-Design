@@ -1,4 +1,4 @@
-# aura/homes
+# Aurahomes
 
 **AI-powered room redesign that actually understands how Indians live — your tenure, your regional roots, your household, and your budget — not just your style.**
 
@@ -95,4 +95,4 @@ All style data lives in one file (`src/data/regionalStyles.ts`) — every compon
 
 ## Status
 
-Actively in development for BITSOM Pitchfest. Built solo, iterating fast — some features above are demo-scoped rather than production-hardened, and that's a deliberate sequencing choice, not an oversight.
+Actively in development for BITSOM Pitchfes, iterating fast — some features above are demo-scoped rather than production-hardened, and that's a deliberate sequencing choice, not an oversight.
